@@ -6,12 +6,14 @@ object Exercises {
     val a: Int = 6
     val result: Int = 2 + a
     assert(result == 8)
+    println("Congratulations! You are amazing!")
   }
 
   def stringInterpolation(): Unit = {
     val h: String = "Hello"
     val result: String = s"$h World"
     assert(result == "Hello World")
+    println("Congratulations! You are incredible!")
   }
 
   def methods(): Unit = {
@@ -19,17 +21,20 @@ object Exercises {
     assert(makeHelloWorld1 == "Hello World")
     def makeHelloWorld2(): String = makeHelloWorld1
     assert(makeHelloWorld2() == "Hello World")
+    println("Congratulations! You are a great human being!")
   }
 
   def methodsWithArguments(): Unit = {
     def add(a: Int, b: Int): Int = a + b
     assert(add(1, 2) == 3)
+    println("Congratulations! Have a great day!")
   }
 
   def listSumMethod(): Unit = {
     val l = List(3, 7)
     val result = l.sum
     assert(result == 10)
+    println("Congratulations! You deserve the best!")
   }
 
   def option(): Unit = {
@@ -39,6 +44,7 @@ object Exercises {
     val choice2: Boolean = false
     val result2: Option[Int] = if (choice2) None else Some(1)
     assert(result2.isDefined)
+    println("Congratulations! Believe in yourself!")
   }
 
   def differenceBetweenValLazyValAndDef(): Unit = {}
