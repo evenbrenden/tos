@@ -3,21 +3,18 @@ package exercises
 object Exercises {
 
   def values(): Unit = {
-
     val a: Int = 6
     val result: Int = 2 + a
     assert(result == 8)
   }
 
   def stringInterpolation(): Unit = {
-
     val h: String = "Hello"
     val result: String = s"$h World"
     assert(result == "Hello World")
   }
 
   def methods(): Unit = {
-
     def makeHelloWorld1: String = "Hello World"
     assert(makeHelloWorld1 == "Hello World")
     def makeHelloWorld2(): String = makeHelloWorld1
@@ -25,19 +22,24 @@ object Exercises {
   }
 
   def methodsWithArguments(): Unit = {
-
     def add(a: Int, b: Int): Int = a + b
     assert(add(1, 2) == 3)
   }
 
   def listSumMethod(): Unit = {
-
     val l = List(3, 7)
     val result = l.sum
     assert(result == 10)
   }
 
-  def option(): Unit = {}
+  def option(): Unit = {
+    val choice1: Boolean = true
+    val result1: Option[Int] = if (choice1) None else Some(1)
+    assert(result1.isEmpty)
+    val choice2: Boolean = false
+    val result2: Option[Int] = if (choice2) None else Some(1)
+    assert(result2.isDefined)
+  }
 
   def differenceBetweenValLazyValAndDef(): Unit = {}
 
@@ -195,7 +197,6 @@ object Exercises {
 object Main {
 
   def main(args: Array[String]): Unit = {
-
     Exercises.values()
     Exercises.stringInterpolation()
     Exercises.methods()
