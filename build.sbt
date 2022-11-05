@@ -1,4 +1,4 @@
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.8"
 scalacOptions += "-language:higherKinds"
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)
 
