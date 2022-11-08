@@ -97,13 +97,79 @@ object Exercises {
     )
   }
 
-  def classNew(): Unit = {}
+  def classNew(): Unit = {
+    class Person(firstName: String, lastName: String) {
+      lazy val fullName: String = s"$firstName $lastName"
+      def sayMyName(): Unit = println(s"My name is $fullName.")
+    }
+    val p: Person = new Person("Leo", "Benkel")
+    p.sayMyName()
+    assert(p.fullName == "Leo Benkel")
+    println(
+      "Congratulations! 'Everything has beauty, but not everyone can see.' -Confucius"
+    )
+  }
 
-  def comparators(): Unit = {}
+  def comparators(): Unit = {
+    val a: Int = 5
+    val b: Int = 6
 
-  def listFilterMethod(): Unit = {}
+    assert(a < b)
 
-  def callByNameParameters(): Unit = {}
+    val c: Int = 10
+    val d: Int = 10
+
+    assert(c == d)
+
+    val e: Int = 13
+    val f: Int = 12
+
+    assert(e > f)
+
+    println("Congratulations! 'The giant tree grows from a grain.'")
+  }
+
+  def listFilterMethod(): Unit = {
+    val l = List(1, 2, 3, 4)
+    println(l)
+
+    val filtered = l.filter(a => a < 2)
+    println(filtered)
+
+    val result = filtered.sum
+    assert(result == 1)
+
+    println("Congratulations! 'Prepare the umbrella before it rains.'")
+  }
+
+  def callByNameParameters(): Unit = {
+    def myIf(predicate: Boolean, ifTrue: => Int, ifFalse: => Int): Int = {
+      if (predicate) ifTrue else ifFalse
+    }
+
+    lazy val a: Int = {
+      throw new Exception("Wrong path")
+    }
+
+    lazy val b: Int = {
+      println("Creating 'b'")
+      567
+    }
+
+    val decision: Boolean = false
+
+    val result: Int = myIf(
+      decision,
+      ifTrue = a,
+      ifFalse = b
+    )
+
+    assert(result == 567)
+
+    println(
+      "Congratulations! 'Do what you have to do, until you can do what you want to do.' Oprah Winfrey"
+    )
+  }
 
   def caseClass(): Unit = {}
 
