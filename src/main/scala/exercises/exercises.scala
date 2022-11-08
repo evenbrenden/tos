@@ -295,11 +295,69 @@ object Exercises {
     )
   }
 
-  def optionMap(): Unit = {}
+  def optionMap(): Unit = {
+    val input: Option[Int] = Some(1)
+    println(input)
 
-  def listFlatten(): Unit = {}
+    val mapped: Option[Int] = input.map(a => a + 1)
+    println(mapped)
 
-  def tuple(): Unit = {}
+    val result: Int = mapped.getOrElse(0)
+    assert(result == 2)
+
+    println(
+      "Congratulations! There are no pressure to be happy, take your time."
+    )
+  }
+
+  def listFlatten(): Unit = {
+    val l: List[Int] = List(1, 2, 3, 4)
+
+    val ll: List[List[Int]] = l.map(a => List(a - 1, a, a + 1))
+    println(s"Map: $ll")
+
+    val flatList: List[Int] = ll.flatten
+    println(s"Flat: $flatList")
+
+    val sum: Int = flatList.sum
+    assert(sum == 30, sum)
+
+    println("Congratulations! Happiness = Reality - Expectation")
+  }
+
+  def tuple(): Unit = {
+    val a: (Int, String) = (12, "abc")
+
+    val first: Int = a._1
+    val second: String = a._2
+
+    assert(first == 12)
+    assert(second == "abc")
+
+    val flip = a.swap
+    val expectedFlip: (String, Int) = "abc" -> 12
+
+    assert(flip == expectedFlip)
+
+    val tripleList: List[(Int, String, Int)] = List(
+      (1, "a", 1),
+      (2, "h", 2),
+      (3, "c", 3)
+    )
+
+    val modifiedTripleList: List[(Int, String)] =
+      tripleList.map(r => (r._1 + r._3) -> "haha")
+
+    val expectedModifiedTripleList: List[(Int, String)] = List(
+      2 -> "haha",
+      4 -> "haha",
+      6 -> "haha"
+    )
+
+    assert(expectedModifiedTripleList == modifiedTripleList)
+
+    println("Congratulations! Do not be afraid, you are not alone.")
+  }
 
   def threadSleep(): Unit = {}
 
