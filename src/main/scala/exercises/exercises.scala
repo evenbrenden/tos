@@ -171,15 +171,129 @@ object Exercises {
     )
   }
 
-  def caseClass(): Unit = {}
+  def caseClass(): Unit = {
+    case class Person(firstName: String, lastName: String)
+    val result: Person = Person("Leo", "Benkel")
+    assert(result.lastName == "Benkel")
+    println(
+      "Congratulations! 'Next to trying and winning, the best thing is trying and failing.' ―Lucy Maud Montgomery"
+    )
+  }
 
-  def objects(): Unit = {}
+  def objects(): Unit = {
+    object Configuration {
+      lazy val KeyNumberOfFoos: String = "NumberOfFoos"
+      lazy val KeyNumberOfBar: String = "NumberOfBar"
+    }
 
-  def visibility(): Unit = {}
+    object Database {
+      private val database: Map[String, Int] = Map(
+        Configuration.KeyNumberOfFoos -> 567,
+        Configuration.KeyNumberOfBar -> 12
+      )
+      def getDataFromDatabase(key: String): Option[Int] =
+        database.get(key)
+    }
 
-  def companionObjects(): Unit = {}
+    val configurationFromDatabase: Option[Int] =
+      Database.getDataFromDatabase(Configuration.KeyNumberOfFoos)
 
-  def apply(): Unit = {}
+    println(configurationFromDatabase)
+
+    assert(configurationFromDatabase.contains(567))
+
+    println("Congratulations! 'Be nice to yourself, you're doing your best.'")
+  }
+
+  def visibility(): Unit = {
+    object Foo {
+      val visibilityPublic = "a"
+
+      private val visibilityPrivate = "b"
+    }
+    val result: String = Foo.visibilityPublic
+    assert(result == "a")
+
+    println("Congratulations! You can change the world.")
+  }
+
+  def companionObjects(): Unit = {
+    import Animal._
+
+    case class Animal(numberOfLegs: Int) {
+      lazy val name: String = convertLegNumberToName(numberOfLegs)
+    }
+
+    object Animal {
+      val BipedName = "biped"
+      val QuadripedName = "quadriped"
+      val CentipedName = "centiped"
+
+      private val LegName: Map[Int, String] = Map(
+        2 -> BipedName,
+        4 -> QuadripedName,
+        100 -> CentipedName
+      )
+
+      private def convertLegNumberToName(numberOfLegs: Int): String = {
+        LegName.get(numberOfLegs).getOrElse(s"$numberOfLegs legged creature")
+      }
+    }
+    val quadriPed: Animal = Animal(4)
+    val biPed: Animal = Animal(2)
+
+    // println(Animal.convertLegNumberToName(biPed.numberOfLegs))
+
+    assert(quadriPed.name == QuadripedName)
+    assert(biPed.name == BipedName)
+
+    println("Congratulations! We only live 4000 weeks, live them the fullest.")
+  }
+
+  def apply(): Unit = {
+    class Person(
+        val firstName: String,
+        val lastName: String
+    ) {
+      lazy val fullName: String = s"$firstName $lastName"
+      def apply(talk: String): String = s"$fullName says: '$talk'"
+      override def toString: String = s"Person($firstName, $lastName)"
+    }
+
+    object Person {
+      def apply(firstName: String, lastName: String): Person = {
+        new Person(firstName, lastName)
+      }
+      def apply(fullName: String): Person = {
+        val parts = fullName.split(" ")
+        val firstName: String = parts.lift(0).getOrElse("N/A")
+        val lastName: String = parts.lift(1).getOrElse("N/A")
+        new Person(firstName, lastName)
+      }
+    }
+
+    val leo: Person = new Person("Leo", "Benkel")
+    println(leo)
+
+    val tesla: Person = Person("Nikola", "Tesla")
+    println(tesla)
+
+    val edison: Person = Person.apply("Thomas Edison")
+    println(edison)
+
+    println(tesla("I want to help bring free energy to the world!"))
+    println(edison.apply("I stole a bunch of ideas!"))
+
+    val p: Person = Person("Wonderful You")
+
+    assert(leo.firstName == "Leo")
+    assert(tesla.lastName == "Tesla")
+    assert(p("Hello World") == s"Wonderful You says: 'Hello World'")
+
+    println(
+      "Congratulations! 'Don't cry because it's over. Smile because it happened.' -Dr. Seuss"
+    )
+  }
 
   def optionMap(): Unit = {}
 
