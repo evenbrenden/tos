@@ -322,7 +322,7 @@ object Exercises {
     val sum: Int = flatList.sum
     assert(sum == 30, sum)
 
-    println("Congratulations! Happiness = Reality - Expectation")
+    println("Congratulations! Happiness = Reality -Expectation")
   }
 
   def tuple(): Unit = {
@@ -364,14 +364,14 @@ object Exercises {
       import java.util.Calendar
       Calendar.getInstance().getTime()
     }
-    println(s"$now - Start")
+    println(s"$now -Start")
 
     val seconds: Int = 1
     val milliSeconds: Int = seconds * 1000
 
-    println(s"$now - Waiting $seconds seconds")
+    println(s"$now -Waiting $seconds seconds")
     Thread.sleep(milliSeconds)
-    println(s"$now - Done")
+    println(s"$now -Done")
 
     println("Congratulations! You are the best You there is, so far!")
   }
@@ -530,17 +530,178 @@ object Exercises {
     )
   }
 
-  def main(): Unit = {}
+  def main(): Unit = {
+    object Database {
+      private lazy val fakeDatabase: Map[Int, String] = Map(
+        76 -> "Leo",
+        12 -> "bob"
+      )
 
-  def set(): Unit = {}
+      def apply(key: Int): Option[String] = fakeDatabase.get(key)
+    }
 
-  def definedType(): Unit = {}
+    // Yes, missing the point, I know.
+    object Maine {
+      def maine(args: Array[String]): Unit = {
+        assert(Database(12) == Some("bob"))
+        assert(Database(34) == None)
+        assert(Database(76) == Some("Leo"))
 
-  def patternMatching(): Unit = {}
+        println(
+          "Congratulations! 'It does not matter how slowly you go as long as you do not stop.' -Confucius"
+        )
+      }
+    }
+    Maine.maine(Array())
+  }
 
-  def foldLeft(): Unit = {}
+  def set(): Unit = {
+    val s1: Set[Int] = Set(6, 0, 2, 19, 1)
+    println(s1)
+    val s2: Set[Int] = (0 to 6 by 2).toSet
+    println(s2)
 
-  def stream(): Unit = {}
+    val s: Set[Int] = s1 ++ s2
+    println(s)
+
+    val increment: Int = 1
+    val result = s.map(a => a + increment).sum
+
+    assert(result == 38, result)
+
+    println(
+      "Congratulations! 'The secret of getting ahead is getting started.' -Mark Twain"
+    )
+  }
+
+  def definedType(): Unit = {
+    type MyType = Int
+    def factory(): MyType = 2
+    val n: MyType = factory()
+    val expected: MyType = 2
+    assert(n == expected, n)
+
+    println(
+      "Congratulations! 'Well done is better than well said.' -Stephen Hawking"
+    )
+  }
+
+  def patternMatching(): Unit = {
+    type L = List[Int]
+
+    val startR: Int = 0
+    val endR: Int = 10
+    val l: L = (startR to endR).toList
+    println(l)
+
+    val l1: L = l.map {
+      case 0          => 1
+      case n if n < 5 => n + 4
+      case n if n < 8 => n - 3
+      case _          => 0
+    }
+    println(l1)
+    val expected1: Int = 36
+    assert(l1.sum == expected1, l1)
+
+    def transform(input: L, f: Int => Int): L = {
+      def loop(accumulator: L, rest: L): L = {
+        println(s"acc: $accumulator")
+        rest match {
+          case Nil          => accumulator
+          case head :: tail => loop(accumulator :+ f(head), tail)
+        }
+      }
+      loop(Nil, input)
+    }
+
+    val l2: L = transform(l1, a => a + 1)
+    println(l2)
+    val expected2: Int = 47
+    assert(l2.sum == expected2, l2)
+
+    println(
+      "Congratulations! 'If you can dream it, you can do it.' -George S. Patton"
+    )
+  }
+
+  def foldLeft(): Unit = {
+    val startR: Int = 0
+    val endR: Int = 19
+    val stepR: Int = 3
+    val l: List[Int] = (startR until endR by stepR).toList
+    println(l)
+    val startFold: Int = 1
+    val r1: Int = l.foldLeft(startFold)((a, b) => a + b)
+    assert(r1 == 64, r1)
+
+    val factor: Int = 2
+    def isEven(n: Int): Boolean = n % factor == 0
+    val r2 = l.foldLeft(List.empty[Int]) {
+      case (accumulator, n) if isEven(n)  => accumulator :+ (n / factor)
+      case (accumulator, n) if !isEven(n) => accumulator :+ (n * factor)
+      case _                              => List.empty[Int]
+    }
+    assert(r2 == List(0, 6, 3, 18, 6, 30, 9), r2)
+
+    println(
+      "Congratulations! 'If you're going through hell, keep going.' -Franklin D. Roosevelt"
+    )
+  }
+
+  def stream(): Unit = {
+    val startN: Int = 0
+    val increment: Int = 2
+    println("- First stream -")
+    def stream1(n: Int = 0): LazyList[Int] = {
+      n #:: stream1(n + increment)
+    }
+    val s1 = stream1(startN)
+    val takeN: Int = 10
+    println(s1.take(takeN))
+    println(s1.take(takeN).toList)
+    println(s1.take(takeN).toList)
+    println(s1.take(takeN).toList)
+    val r1 = s1.take(takeN).sum
+    assert(r1 == 90, r1)
+
+    println("- Second stream -")
+    def stream2(n: Int = 0): LazyList[Int] = {
+      LazyList
+        .from(n)
+        .map(a => a * increment)
+    }
+    val s2: LazyList[Int] = stream2(startN)
+    println(s2.take(6).take(5).take(4).toList)
+    println(s2.take(4).take(5).take(6).toList)
+    val r2 = s2.take(takeN).sum
+    assert(r2 == 90, r2)
+
+    println("- Factorial -")
+    def factorial(n: Int): Int = {
+      if (n == 0) 1
+      else n * factorial(n - 1)
+    }
+    def factorialStream(n: Int): Int = {
+      val start: Int = 1
+      val takeN: Int = n
+      def multiply(a: Int, b: Int): Int = a * b
+      LazyList
+        .from(start)
+        .take(takeN)
+        .foldLeft(1)(multiply)
+    }
+    (0 to 10).foreach { n =>
+      val f: Int = factorial(n)
+      val fs: Int = factorialStream(n)
+      println(s"$f == $fs")
+      assert(f == fs)
+    }
+
+    println(
+      "Congratulations! 'The secret of getting ahead is getting started.' -Mark Twain"
+    )
+  }
 
   def forComprehension(): Unit = {}
 
