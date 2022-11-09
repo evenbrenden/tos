@@ -8,3 +8,5 @@ scalacOptions ++= Seq(
   "-feature",
   "-unchecked"
 )
+
+libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4"

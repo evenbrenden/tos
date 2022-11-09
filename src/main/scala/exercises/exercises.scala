@@ -359,19 +359,176 @@ object Exercises {
     println("Congratulations! Do not be afraid, you are not alone.")
   }
 
-  def threadSleep(): Unit = {}
+  def threadSleep(): Unit = {
+    def now = {
+      import java.util.Calendar
+      Calendar.getInstance().getTime()
+    }
+    println(s"$now - Start")
 
-  def random(): Unit = {}
+    val seconds: Int = 1
+    val milliSeconds: Int = seconds * 1000
 
-  def flatMap(): Unit = {}
+    println(s"$now - Waiting $seconds seconds")
+    Thread.sleep(milliSeconds)
+    println(s"$now - Done")
 
-  def curry(): Unit = {}
+    println("Congratulations! You are the best You there is, so far!")
+  }
 
-  def `try`(): Unit = {}
+  def random(): Unit = {
+    import scala.util.Random
+    {
+      val rand = new Random()
 
-  def range(): Unit = {}
+      println("Random Int:")
+      println(rand.nextInt())
 
-  def listParallel(): Unit = {}
+      val maxRand = 10
+      println(s"Random Int lower than $maxRand:")
+      println(rand.nextInt(maxRand))
+    }
+
+    object RandomUtils {
+      val seed = 0
+      private val rand = new Random(seed)
+
+      def randomInt(min: Int, max: Int): Int = {
+        rand.nextInt(max - min) + min
+      }
+    }
+
+    val minRand = 10
+    val maxRand = 20
+    println(
+      s"Random number between $minRand and $maxRand with seed ${RandomUtils.seed}:"
+    )
+    println(RandomUtils.randomInt(minRand, maxRand))
+
+    val output = RandomUtils.randomInt(13, 200)
+    println(output)
+    assert(output == 41, output)
+
+    for {
+      min <- 0 to 1000
+      max <- 0 to 2000
+      if min < max
+    } {
+      val randomNumber = RandomUtils.randomInt(min, max)
+      assert(randomNumber >= min)
+      assert(randomNumber < max)
+    }
+
+    println("Congratulations! Keep moving forward.")
+  }
+
+  def flatMap(): Unit = {
+    val opt: Option[Int] = Some(1)
+    val outOpt: Option[Int] = opt.flatMap {
+      case n if n > 3 => Some(n)
+      case 1          => Some(3)
+      case _          => None
+    }
+    assert(outOpt == Some(3))
+
+    val l: List[Int] = 2 :: 4 :: Nil
+    val outList: List[Int] = l.flatMap {
+      case n if n == 2 => List(1, 2, 3)
+      case n if n == 3 => n :: n :: Nil
+      case n if n < 5  => n :: Nil
+      case _           => Nil
+    }
+    assert(outList.length == 4)
+
+    println("Congratulations! Go beyond.")
+  }
+
+  def curry(): Unit = {
+    def add(a: Int)(b: Int): Int = a + b
+    val add2: Int => Int = add(2)
+    val r1: Int = add2(4)
+    assert(r1 == 6)
+
+    val r2 = add(3)(7)
+    assert(r2 == 10)
+    val r3 = add(3) { 3 + 4 }
+    assert(r3 == 10)
+
+    println("Congratulations! Don't stop going forward!")
+  }
+
+  def `try`(): Unit = {
+    // throw new Exception("Something is broken")
+    // val badBadMath = 5 / 0
+
+    import scala.util.Random
+    import scala.util.{Try, Success, Failure}
+
+    val rand = new Random(0)
+    val numerator: Int = 12
+    def denominator(): Int = if (rand.nextBoolean()) 0 else 1
+    def mightFail(): Try[Int] = Try(numerator / denominator())
+
+    def results(): Int = mightFail() match {
+      case Success(v) => v
+      case Failure(ex) =>
+        println(s"It failed but we are trying again: $ex")
+        results()
+    }
+    assert(results() == 12)
+
+    def badMethod(): Try[Int] = Try(throw new Exception("Bad method"))
+    val alternativeResults: Int = badMethod().getOrElse(8)
+    assert(alternativeResults == 8)
+
+    println("Congratulations! Go beyond.")
+  }
+
+  def range(): Unit = {
+    val inputList1 = (0 to 50)
+    println(inputList1)
+    val result1: Int = inputList1.sum
+    val expected1: Int = 1275
+    assert(result1 == expected1, result1)
+
+    val step: Int = 3
+    val inputList2 = (0 until 20 by step).toList
+    println(inputList2)
+    val result2: Int = inputList2.length
+    val expected2: Int = 7
+    assert(result2 == expected2, result2)
+
+    println(
+      "Congratulations! 'Happiness is when what you think, what you say, and what you do are in harmony.' -Mahatma Ghandi"
+    )
+  }
+
+  def listParallel(): Unit = {
+    import scala.collection.parallel.CollectionConverters._
+
+    val from: Int = 0
+    val end: Int = 12
+    val step: Int = 4
+    val expected: Int = 32
+    val result1: Int = (from to end by step).map { a =>
+      val adder: Int = 2
+      println(s"#seq> $a + $adder")
+      a + adder
+    }.sum
+    assert(result1 == expected, result1)
+
+    println("With 'par':")
+    val result2: Int = (from to end by step).par.map { a =>
+      val adder: Int = 2
+      println(s"#par> $a + $adder")
+      a + adder
+    }.sum
+    assert(result2 == expected, result2)
+
+    println(
+      "Congratulations! 'Do today what others won't so tomorrow you can do what others can't.' -Jerry Rice"
+    )
+  }
 
   def main(): Unit = {}
 
