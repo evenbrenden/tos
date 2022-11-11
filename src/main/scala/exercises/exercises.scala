@@ -744,9 +744,90 @@ object Exercises {
     )
   }
 
-  def implicitClass(): Unit = {}
+  def implicitClass(): Unit = {
+    object Implicits {
+      // Compiler says "value class may not be a member of another class"
+      // implicit class IntExtra(val i: Int) extends AnyVal {
+      //   def isEven: Boolean = i % (2: Int) == 0
+      //   def increaseByN(n: Int = 1): Int = i + n
+      // }
+      implicit class IntExtra(i: Int) {
+        def isEven: Boolean = i % (2: Int) == 0
+        def increaseByN(n: Int = 1): Int = i + n
+      }
 
-  def regex(): Unit = {}
+      implicit class ListExtra(list: List[Int]) {
+        def everyNMap(n: Int)(f: Int => Int): List[Int] = {
+          list.zipWithIndex.map {
+            case (element, i) if i % n == 0 => f(element)
+            case (element, _)               => element
+          }
+        }
+      }
+    }
+
+    import Implicits._
+
+    val listEnd: Int = 15
+    val input: List[Int] = (0 to listEnd).toList
+    println(input)
+    val output: List[Int] = input
+      .filter(_.isEven)
+      .everyNMap(56)(_.increaseByN(4))
+    println(output)
+    val result: Int = output.sum
+    val expected: Int = 60
+    assert(result == expected, result)
+
+    println(
+      "Congratulations! 'It does not matter how slowly you go as long as you do not stop.' -Confucius"
+    )
+  }
+
+  def regex(): Unit = {
+    import scala.util.matching.Regex
+    import java.util.regex.{Matcher, Pattern}
+    import scala.util.Try
+
+    val testPhoneNumber: String = "123-456-7890"
+    val isPhoneNumber = "[0-9]{3}-[0-9]{3}-[0-9]{4}".r.matches(testPhoneNumber)
+    println(s"is phone number: $isPhoneNumber")
+
+    object FindEmail {
+      private val regex: Regex = new Regex("([a-z]+)@([a-z]+)\\.([a-z]+)")
+      private val pattern: Pattern = regex.pattern
+
+      def apply(input: String): RegexFind = RegexFind(pattern.matcher(input))
+
+      case class RegexFind(private val m: Matcher) {
+        private lazy val find: Boolean = m.find()
+        private lazy val groupCount: Int = m.groupCount()
+
+        private lazy val matches: List[String] = (for {
+          n <- 1 to groupCount
+          group = Try(m.group(n))
+          if group.isSuccess
+        } yield group.get).toList
+
+        override lazy val toString: String = s"match: $find, matches: $matches"
+      }
+    }
+    val testEmail: String = "test@example.com"
+    val matches = FindEmail(testEmail)
+    println(s"Matches: $matches")
+
+    val testAddress: String = "123 tutorial st."
+    val isAddress = "([0-9]+) ([a-z]+) (st|blvd)\\.".r
+    testAddress match {
+      case isAddress(number, streetName, streetType) =>
+        println(s"streetName: $streetName $streetType, at: $number")
+        assert(number.toInt == 123, number)
+    }
+
+    println(
+      "Congratulations! 'The most effective way to do it, is to do it.' -Amelia Earhart"
+    )
+  }
 
   def implicitVal(): Unit = {}
 
