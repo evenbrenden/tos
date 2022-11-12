@@ -829,13 +829,182 @@ object Exercises {
     )
   }
 
-  def implicitVal(): Unit = {}
+  def implicitVal(): Unit = {
+    case class Tracker(name: String)
 
-  def future(): Unit = {}
+    object Utils {
+      def add(a: Int, b: Int)(implicit t: Tracker): Int = {
+        println(s"${t.name} add")
+        a + b
+      }
 
-  def `trait`(): Unit = {}
+      def multiply(a: Int, b: Int)(implicit t: Tracker): Int = {
+        println(s"${t.name} multiply")
+        a * b
+      }
+    }
 
-  def either(): Unit = {}
+    object Foo {
+      implicit private val t: Tracker = Tracker("[Foo]")
+
+      private val a: Int = 4
+      private val b: Int = 4
+      val out = Utils.add(a, b)
+    }
+
+    object Bar {
+      implicit private val t: Tracker = Tracker("[Bar]")
+
+      private val a: Int = 30
+      private val b: Int = 2
+      val out = Utils.multiply(a, b)
+    }
+
+    val fooOut = Foo.out
+    val barOut = Bar.out
+
+    assert(fooOut == 8, fooOut)
+    assert(barOut == 60, barOut)
+
+    val oneOff = Utils.add(10, 24)(Tracker("Addition"))
+    assert(oneOff == 34, oneOff)
+
+    println(
+      "Congratulations! 'When something is important enough, you do it even if the odds are not in your favor.' -Elon Musk"
+    )
+  }
+
+  def future(): Unit = {
+    import java.util.concurrent.TimeUnit
+    import scala.util.Try
+    import scala.concurrent.duration.Duration
+    import scala.concurrent.{
+      Await,
+      ExecutionContext,
+      ExecutionContextExecutor,
+      Future
+    }
+    implicit val ex: ExecutionContextExecutor = ExecutionContext.global
+
+    println(">> Start exercise")
+    def createCompute(name: String)(operation: => Int): Future[Int] = {
+      Future {
+        println(s"Start $name")
+        val output = operation
+        println(s"Done $name")
+        output
+      }
+    }
+    val f1: Future[Int] = createCompute("f1") {
+      Thread.sleep(100)
+      1
+    }
+    val f2: Future[Int] = createCompute("f2") {
+      Thread.sleep(50)
+      1
+    }.map(a => a + 1)
+
+    val fTotal = for {
+      f1Result <- f1
+      f3Result <- createCompute("f3") {
+        Thread.sleep(50)
+        3
+      }
+      f4Result <- createCompute("f4") {
+        Thread.sleep(50)
+        4
+      }
+      f5Result <- createCompute("f5") {
+        Thread.sleep(50)
+        5
+      }
+      f2Result <- f2
+    } yield {
+      f1Result + f2Result + f3Result + f4Result + f5Result
+    }
+    val outputTotal: Int =
+      Await.result(fTotal, Duration(1000, TimeUnit.MILLISECONDS))
+    assert(outputTotal == 15, outputTotal)
+
+    println(">> Start Part 2")
+    val f: Future[Int] = Future {
+      println("start")
+      Thread.sleep(1500)
+      println("finish")
+      1
+    }
+    val output: Int =
+      Try(Await.result(f, Duration(2, TimeUnit.SECONDS))).getOrElse(5)
+    Thread.sleep(750)
+    assert(output == 1, output)
+
+    println(
+      "Congratulations! 'Ever tried. Ever failed. No matter. Try Again. Fail again. Fail better.' -Samuel Beckett"
+    )
+  }
+
+  def `trait`(): Unit = {
+    trait Animal {
+      def name: String
+      protected def sound: String
+      final def talk(): Unit = println(s"$name says $sound")
+    }
+
+    case class Dog(override val name: String) extends Animal {
+      override protected final lazy val sound = "woof"
+    }
+
+    case class Cat(override val name: String) extends Animal {
+      override protected final lazy val sound = "meow"
+    }
+
+    case class Bird(override val name: String) extends Animal {
+      override protected final lazy val sound = "pip"
+    }
+
+    val cat: Cat = Cat("Kitty")
+    val dog: Dog = Dog("Snuffles")
+    val bird: Bird = Bird("Coco")
+
+    val myAnimals: List[Animal] = List(cat, dog, bird)
+
+    myAnimals.foreach(a => a.talk())
+
+    assert(myAnimals.map(a => a.name) == List("Kitty", "Snuffles", "Coco"))
+
+    println(
+      "Congratulations! 'Set your goals high, and don't stop till you get there.' -Bo Jackson"
+    )
+  }
+
+  def either(): Unit = {
+    val lEi: List[Either[String, Int]] = List(
+      Left("abc"),
+      Right(12)
+    )
+    println(lEi)
+
+    def divide(a: Double, b: Double): Either[String, Double] = {
+      if (b == 0) Left("Division by zero") else Right(a / b)
+    }
+    val a1: Double = 1
+    val b1: Double = 0
+    val badResult: Either[String, Double] = divide(a1, b1)
+    assert(badResult.isLeft)
+    badResult.left.foreach(l => println(s"Error: $l"))
+
+    val a2: Double = 24
+    val b2: Double = 2
+    val goodResult: Either[String, Double] = divide(a2, b2)
+    val resultModified: Either[String, Double] = goodResult.map(r => r + 1)
+    val resultGet: Double = resultModified.getOrElse(1.0)
+    assert(resultGet == 13)
+    assert(goodResult.isRight)
+
+    println(
+      "Congratulations! 'No bird soars too high if he soars with his own wings.' -William Blake"
+    )
+  }
 
   def stringFormat(): Unit = {}
 
