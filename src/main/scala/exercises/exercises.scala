@@ -1006,7 +1006,40 @@ object Exercises {
     )
   }
 
-  def stringFormat(): Unit = {}
+  def stringFormat(): Unit = {
+    val i: Int = 5
+    val outputLeadingZeros = f"$i%04d"
+    println(outputLeadingZeros)
+    assert(outputLeadingZeros == "0005")
+
+    val length: Int = 4
+    val c: Char = '0'
+    println(s"%${c}${length}d".format(i))
+
+    val infiniteDouble: Double = 10 / 3.0
+    println(f"$infiniteDouble%09.4f")
+
+    val totalCharacterNumber: Int = 7
+    val decimalQuantity: Int = 3
+    assert(totalCharacterNumber > decimalQuantity)
+    val outputTruncDecimalAndLeadZero =
+      s"%0${totalCharacterNumber}.${decimalQuantity}f".format(infiniteDouble)
+    println(outputTruncDecimalAndLeadZero)
+    assert(outputTruncDecimalAndLeadZero == "003.333")
+
+    import java.util.Locale
+    import java.text.NumberFormat
+
+    val bigNumber: Long = 123345567
+    val formatNumberFR = NumberFormat.getIntegerInstance(Locale.FRANCE)
+    println(formatNumberFR.format(bigNumber))
+    val formatNumberUS = NumberFormat.getIntegerInstance(Locale.US)
+    println(formatNumberUS.format(bigNumber))
+
+    println(
+      "Congratulations! 'With the new day comes new strength and new thoughts.' -Eleanor Roosevelt"
+    )
+  }
 
   def abstractClass(): Unit = {}
 
