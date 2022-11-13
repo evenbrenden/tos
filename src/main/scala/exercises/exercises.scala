@@ -1041,17 +1041,155 @@ object Exercises {
     )
   }
 
-  def abstractClass(): Unit = {}
+  def abstractClass(): Unit = {
+    abstract class Shape(
+        name: String,
+        protected val lengthOfSides: Int,
+        numberOfSides: Int
+    ) {
+      def circumference: Double = numberOfSides * lengthOfSides
 
-  def recursion(): Unit = {}
+      override def toString: String =
+        s"$name shape of size $lengthOfSides " +
+          f"with $numberOfSides sides have a circumference of $circumference%1.2f"
+    }
+    case class Square(size: Int) extends Shape("Square", size, 4)
+    case class Triangle(size: Int) extends Shape("Triangle", size, 3)
+    case class Circle(radius: Int) extends Shape("Circle", radius, 0) {
+      override lazy val circumference: Double =
+        scala.math.Pi * 2.0 * lengthOfSides
+    }
 
-  def repeatedParameters(): Unit = {}
+    val square: Square = Square(size = 4)
+    val triangle: Triangle = Triangle(size = 3)
+    val circle: Circle = Circle(radius = 2)
+    val shapes: List[Shape] = List(
+      square,
+      triangle,
+      circle
+    )
+    shapes.foreach(println)
+    assert(square.circumference == 16)
+    assert(triangle.circumference == 9)
+    assert(Math.abs(circle.circumference - 12) <= 1)
 
-  def genericTrait(): Unit = {}
+    println(
+      "Congratulations! 'Ever tried. Ever failed. No matter. Try Again. Fail again. Fail better.' -Samuel Beckett"
+    )
+  }
 
-  def `sealed`(): Unit = {}
+  def recursion(): Unit = {
+    def sumUpTo(until: Int): Int = {
+      def loop(n: Int = 0, acc: Int = 0): Int = {
+        if (n >= until) n + acc
+        else loop(n + 1, acc + n)
+      }
+      loop()
+    }
 
-  def caseObject(): Unit = {}
+    val result: Int = sumUpTo(5)
+    val expected: Int = 15
+    assert(result == expected, result)
+
+    println(
+      "Congratulations! 'Knowing is not enough; we must apply. Willing is not enough; we must do.' -Johann Wolfgang von Goethe"
+    )
+  }
+
+  def repeatedParameters(): Unit = {
+    case class AnnoyingInput(l: List[Int]) {
+      lazy val sum = l.sum
+    }
+    case class NiceLookingInput(l: Int*) {
+      lazy val sum = l.sum
+    }
+
+    val a1: AnnoyingInput = AnnoyingInput(List(1, 2, 3))
+    val b1: NiceLookingInput = NiceLookingInput(1, 2, 3)
+    println(a1)
+    println(b1)
+    assert(a1.sum == b1.sum)
+
+    val input: List[Int] = List(1, 2, 3)
+    val a2: AnnoyingInput = AnnoyingInput(input)
+    val b2: NiceLookingInput = NiceLookingInput(input: _*)
+    assert(a2.sum == b2.sum)
+
+    println(
+      "Congratulations! 'It always seems impossible until it's done.' -Nelson Mandela"
+    )
+  }
+
+  def genericTrait(): Unit = {
+    trait Combine[A] {
+      def combineWith(a: A): A
+    }
+
+    case class PotatoBag(weight: Double) extends Combine[PotatoBag] {
+      override def combineWith(otherBag: PotatoBag): PotatoBag =
+        PotatoBag(this.weight + otherBag.weight)
+    }
+
+    case class TruckOfPotatoes(potatoBags: PotatoBag*) {
+      lazy val totalWeight: Double =
+        potatoBags
+          .reduceOption((a, b) => a.combineWith(b))
+          .map(_.weight)
+          .getOrElse(0)
+    }
+
+    val truck: TruckOfPotatoes = TruckOfPotatoes(PotatoBag(10), PotatoBag(8.1))
+    val totalWeigth = truck.totalWeight
+    assert(totalWeigth == 18.1, totalWeigth)
+
+    println(
+      "Congratulations! 'Set your goals high, and don't stop till you get there.' -Bo Jackson"
+    )
+  }
+
+  def `sealed`(): Unit = {
+    sealed trait Shape {
+      def name: String
+    }
+    object Shapes {
+      case class Square() extends Shape {
+        override lazy final val name: String = "Square"
+      }
+      case class Triangle() extends Shape {
+        override lazy final val name: String = "Triangle"
+      }
+      case class Circle() extends Shape {
+        override lazy final val name: String = "Circle"
+      }
+    }
+
+    val a: Shape = Shapes.Triangle()
+    assert(a.name == "Triangle")
+
+    println("Congratulations! Keep on doing great things!")
+  }
+
+  def caseObject(): Unit = {
+    object A {
+      lazy val a: String = "a"
+    }
+    case object Foo {}
+
+    val a: A.type = A
+    val foo: Foo.type = Foo
+    assert(a == A)
+    assert(foo == Foo)
+    println(s"'a' is ${a.toString}")
+    println(s"'foo' is ${foo.toString}")
+    assert(a.a == "a")
+    // assert(foo.foo == "foo") // No such thing
+    val expectedName: String = "Foo"
+    assert(foo.toString == expectedName)
+
+    println(
+      "Congratulations! 'Failure will never overtake me if my determination to succeed is strong enough.' -Og Mandino"
+    )
+  }
 
   def enumerationFor2x(): Unit = {}
 
