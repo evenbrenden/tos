@@ -172,6 +172,7 @@ object Exercises {
   }
 
   def caseClass(): Unit = {
+    // case class = record
     case class Person(firstName: String, lastName: String)
     val result: Person = Person("Leo", "Benkel")
     assert(result.lastName == "Benkel")
@@ -1469,15 +1470,253 @@ object Exercises {
     )
   }
 
-  def upperConstraint(): Unit = {}
+  def upperConstraint(): Unit = {
+    trait Shape
 
-  def caseClassCopy(): Unit = {}
+    case object Square extends Shape
+    case object Triangle extends Shape
+    case object Circle extends Shape
+    case object Rectangle extends Shape
 
-  def implicitConversion(): Unit = {}
+    abstract class Color(r: Int, g: Int, b: Int) {
+      final lazy val display: String = s"$this($r,$g,$b)"
+    }
 
-  def caseClassUnapply(): Unit = {}
+    case object Red extends Color(255, 0, 0)
+    case object Blue extends Color(0, 0, 255)
+    case object Yellow extends Color(0, 0, 255)
 
-  def challenge1(): Unit = {}
+    case class Canvas[S <: Shape, C <: Color](shape: S, color: C) {
+      override def toString: String = s"${color.display} $shape".toLowerCase
+    }
+
+    val c1 = Canvas(Triangle, Blue)
+    println(c1)
+    assert(c1.shape == Triangle)
+    assert(c1.color == Blue)
+
+    val c2 = Canvas(Rectangle, Yellow)
+    println(c2)
+    assert(c2.shape == Rectangle)
+    assert(c2.color == Yellow)
+
+    println(
+      "Congratulations! 'Whether you think you can, or you think you can't - you're right.' -Henry Ford"
+    )
+  }
+
+  def caseClassCopy(): Unit = {
+    type ArticleId = Int
+    type AuthorId = Int
+    type Date = Long
+
+    case class ArticleRow(
+        id: ArticleId,
+        authorId: AuthorId,
+        content: String,
+        numberOfLikes: Int = 3,
+        lastUpdateDate: Date
+    ) {
+      def like(): ArticleRow = this.copy(numberOfLikes = this.numberOfLikes + 1)
+
+      def updateContent(
+          content: String = this.content,
+          authorId: AuthorId = this.authorId
+      ): ArticleRow = this.copy(content = content, authorId = authorId)
+
+      override def toString: String = "Article(" +
+        s"id:$id, " +
+        s"author:$authorId, " +
+        s"content:'$content', " +
+        s"likes:$numberOfLikes, " +
+        s"date:$lastUpdateDate" +
+        ")"
+    }
+
+    val article: ArticleRow = ArticleRow(
+      id = 1,
+      authorId = 1,
+      content = "bar",
+      lastUpdateDate = 123L
+    )
+    println(article)
+    assert(article.content == "bar")
+
+    val likedArticle: ArticleRow = article.like().like()
+    println(likedArticle)
+    assert(likedArticle.numberOfLikes == 5)
+
+    val copyArticle = likedArticle.copy(id = 4)
+    println(copyArticle)
+    assert(copyArticle.id == 4)
+
+    val updateContent = copyArticle.updateContent(content = "foo")
+    println(updateContent)
+    assert(updateContent.content == "foo")
+
+    println("Congratulations! 'Hold the vision, trust the process.' -Unknown")
+  }
+
+  def implicitConversion(): Unit = {
+    import scala.language.implicitConversions
+
+    case class Foo(number: Int)
+    case class Bar(txt: String)
+    object Bar {
+      implicit def toFoo(bar: Bar): Foo = {
+        println(s"[DEBUG] Converting: $bar")
+        Foo(number = bar.txt.length)
+      }
+    }
+
+    def display(f: Foo): Unit = println(s"Display: $f")
+    def increase(f: Foo): Foo = f.copy(number = f.number + 1)
+
+    val f: Foo = Foo(2)
+    val b: Bar = Bar("barr")
+
+    display(f)
+    display(b)
+
+    val f_out: Foo = increase(f)
+    val b_out: Foo = increase(b)
+
+    assert(f_out.number == 3)
+    assert(b_out.number == 5, b_out.number)
+
+    println(
+      "Congratulations! 'Sometimes later becomes never. Do it now.' -Unknown"
+    )
+  }
+
+  def caseClassUnapply(): Unit = {
+    case class Foo(a: Int, b: String, c: Double)
+
+    val f: Foo = Foo(a = 2, b = "a", c = 0)
+    val rF = f match {
+      case Foo(n, "a", d) if n > 1 => n
+      case Foo(1, s, d)            => Math.ceil(d)
+      case Foo(n, s, d @ 0.3)      => Math.floor(n + d)
+      case f                       => throw new Exception(s"Unknown $f")
+    }
+    assert(rF == 2, rF)
+
+    class Bar(val a: Int, val b: String, val c: Double)
+    // Companion object
+    object Bar {
+      def unapply(bar: Bar): Option[(Int, String, Double)] = {
+        Some((bar.a, bar.b, bar.c))
+      }
+    }
+
+    val b: Bar = new Bar(a = 4, b = "a", c = 0)
+    val rB = b match {
+      case Bar(n, "a", d) if n > 1 => n
+      case Bar(1, s, d)            => Math.ceil(d)
+      case Bar(n, s, d @ 0.3)      => Math.floor(n + d)
+      case f                       => throw new Exception(s"Unknown $f")
+    }
+    assert(rB == 4, rB)
+
+    println(
+      "Congratulations! 'The Pessimist Sees Difficulty In Every Opportunity. The Optimist Sees Opportunity In Every Difficulty.' -Winston Churchill"
+    )
+  }
+
+  def challenge1(): Unit = {
+    object Round {
+      def apply(d: Double, precision: Int = 2): Double = {
+        val pow = Math.pow(10, precision)
+        Math.round(pow).toDouble / precision
+      }
+    }
+
+    trait Displayable {
+      def display: String
+    }
+
+    sealed abstract class Item(name: String, price: Double)
+        extends Displayable {
+      lazy val display: String = s"${this.name.capitalize}\t${this.price}"
+      lazy val getName: String = name
+      lazy val getPrice: Double = price
+    }
+
+    case object Apple extends Item("Apple", 0.1)
+    case object Bread extends Item("Bread", 0.2)
+    case object Carrot extends Item("Carrot", 0.4)
+    case object Lemon extends Item("Lemon", 0.3)
+
+    case class GroceryListRow(item: Item, quantity: Int) extends Displayable {
+      lazy val cost: Double = item.getPrice * quantity
+      lazy val display: String =
+        s"${item.display}\t\t${item}\t\t${quantity}"
+    }
+
+    case class Groceries(items: List[GroceryListRow]) extends Displayable {
+      lazy val totalCost: Double = 0
+
+      lazy val display: String =
+        "Name\tPrice per Unit\t???\t???\n" +
+          items.map(_.display).mkString("\t\t") +
+          s"\nTotal cost: ${totalCost}\n" +
+          "-------------------"
+
+      def add(item: GroceryListRow): Groceries =
+        this.copy(items = items :+ item)
+    }
+
+    object Groceries {
+      def build(items: GroceryListRow*): Groceries = Groceries(items.toList)
+    }
+
+    {
+      assert(Carrot.getName == "Carrot")
+      assert(Carrot.getPrice == 0.4)
+      assert(Carrot.display == "Carrot\t0.4", Carrot.display)
+    }
+    {
+      val testRow = GroceryListRow(Carrot, 2)
+      assert(testRow.cost == 0.8)
+      assert(testRow.item == Carrot)
+      assert(
+        testRow.display == s"${Carrot.display}\t\t2\t\t0.8",
+        testRow.display
+      )
+    }
+    {
+      val testCart = Groceries.build(
+        GroceryListRow(Carrot, 3),
+        GroceryListRow(Lemon, 5)
+      )
+      assert(testCart.totalCost == 3.7)
+      println(testCart.display)
+      assert(testCart.display.contains("Name"))
+      assert(testCart.display.contains("Price per Unit"))
+      assert(testCart.display.contains("Quantity"))
+      assert(testCart.display.contains("Total Price"))
+      assert(testCart.display.contains(Carrot.display))
+      assert(testCart.display.contains(Lemon.display))
+      assert(testCart.display.contains(testCart.totalCost.toString))
+    }
+
+    val cart = Groceries
+      .build(
+        GroceryListRow(Carrot, 3),
+        GroceryListRow(Carrot, 1)
+      )
+      .add(GroceryListRow(Apple, 3))
+      .add(GroceryListRow(Lemon, 5))
+      .add(GroceryListRow(Bread, 1))
+      .add(GroceryListRow(Bread, 1))
+
+    println(cart.display)
+    assert(cart.totalCost == 30)
+
+    println(
+      "Congratulations! 'The question isn't who is going to let me, it's who is going to stop me.' -Ayn Rand"
+    )
+  }
 
   def listZip(): Unit = {}
 
