@@ -1252,15 +1252,222 @@ object Exercises {
     )
   }
 
-  def contexts(): Unit = {}
+  def contexts(): Unit = {
+    // 1
+    val a: Int = 10
+    val b: Int = {
+      val a: Int = 2
+      val b: Int = 10
+      a + b
+    }
+    assert(a == 10)
+    assert(b == 12)
 
-  def infixNotation(): Unit = {}
+    {
+      val a: Int = 3
+      val b: Int = 4
+      assert(a + b == 7)
 
-  def patternMatchingAt(): Unit = {}
+      {
+        val a: Int = 4
+        val b: Int = 4
+        assert(a + b == 8)
 
-  def patternMatchingOR(): Unit = {}
+        {
+          val b: Int = 5
+          assert(a + b == 9)
 
-  def patternMatchingForCaseClass(): Unit = {}
+          {
+            val a: Int = 5
+            assert(a + b == 10)
+          }
+        }
+      }
+    }
+
+    println(
+      "Congratulations! 'Life is 10% what happens to you and 90% how you react to it.' -Charles R. Swindoll"
+    )
+  }
+
+  def infixNotation(): Unit = {
+    {
+      val a: Int = 10
+      val b: Int = 7
+      val r: Int = a.+(b)
+      assert(r == 17, r)
+    }
+
+    {
+      val a: Boolean = true
+      val b: Boolean = false
+      val r: Boolean = a.||(b)
+      assert(r)
+    }
+
+    {
+      case class Foo(a: Int) {
+        def combineWith(extraA: Int): Foo = {
+          this.copy(a = this.a + extraA)
+        }
+
+        def combineWith(other: Foo): Foo = {
+          this.copy(a = this.a + other.a)
+        }
+
+        def increased: Foo = this.combineWith(1)
+      }
+
+      val a: Foo = Foo(1)
+      val b1: Int = 12
+      val r1: Foo = a combineWith b1
+      assert(r1.a == 13)
+
+      val b2: Foo = Foo(b1)
+      val r2: Foo = a.combineWith(b2)
+      assert(r1.==(r2))
+    }
+
+    println(
+      "Congratulations! 'Failure will never overtake me if my determination to succeed is strong enough.' -Og Mandino"
+    )
+  }
+
+  def patternMatchingAt(): Unit = {
+    case class Person(firstName: String, lastName: String) {
+      override lazy val toString: String = s"[$firstName $lastName]"
+    }
+    object Person {
+      def apply(fullName: String): Person = {
+        val splitted = fullName.split(" ")
+        Person(splitted(0), splitted(1))
+      }
+    }
+
+    val people = Seq(
+      Person("Adriana Zhang"),
+      Person("Jerome Serrano"),
+      Person("Jakayla Gomez"),
+      Person("Terry Terrell"),
+      Person("Anabel Rowe"),
+      Person("Lara Dudley"),
+      Person("Malaki Sullivan"),
+      Person("Lara", "Long"),
+      Person("No Body"),
+      Person("Eugene Gaines"),
+      Person("Derrick Pace"),
+      Person("Rylee Ayers")
+    )
+    val output = people
+      .flatMap {
+        case p @ Person(firstName, _) if firstName.startsWith("A") => Some(p)
+        case p @ (Person("Rylee", _) | Person(_, "Pace"))          => Some(p)
+        case Person(firstName, "Terrell") => Some(Person(firstName, "Doe"))
+        case p @ Person("Lara", _)        => Some(p.copy(firstName = "John"))
+        case _                            => None
+      }
+      .sortBy(_.toString)
+    output.foreach(println)
+
+    val expectedLength: Int = 7
+    assert(output.length == expectedLength)
+
+    println(
+      "Congratulations! 'Do one thing every day that scares you.' -Eleanor Roosevelt"
+    )
+  }
+
+  def patternMatchingOR(): Unit = {
+    sealed trait Shape
+    case object Square extends Shape
+    case object Triangle extends Shape
+    case object Circle extends Shape
+    case object Rectangle extends Shape
+    case object Hexagone extends Shape
+    case object Octagon extends Shape
+
+    val shape: Shape = Octagon
+    val output: String = shape match {
+      case s @ (Square | Circle)           => s"The $s is perfect"
+      case Hexagone | Triangle | Rectangle => "This shape is ok"
+      case s                               => s"I don't know this shape: $s"
+    }
+    println(output)
+    assert(output == s"I don't know this shape: $shape")
+
+    println("Congratulations! 'Impossible is just an opinion.' -Paulo Coelho")
+  }
+
+  def patternMatchingForCaseClass(): Unit = {
+    case class Person(firstName: String, lastName: String) {
+      override lazy val toString: String = s"[$firstName $lastName]"
+
+      private lazy val firstLetterFirstName: Char = firstName.toUpperCase.head
+      private lazy val firstLetterLastName: Char = lastName.toUpperCase.head
+
+      lazy val initials: String =
+        s"$firstLetterFirstName$firstLetterLastName"
+
+      lazy val isFirstBefore: Boolean =
+        firstLetterFirstName <= firstLetterLastName
+    }
+    object Person {
+      def apply(fullName: String): Person = {
+        val splited = fullName.split(" ")
+        Person(splited(0), splited(1))
+      }
+    }
+
+    val people = Seq(
+      Person("Adriana Zhang"),
+      Person("Jerome Serrano"),
+      Person("Jakayla Gomez"),
+      Person("Oscar Martinez"),
+      Person("Anabel Rowe"),
+      Person("Lara Dudley"),
+      Person("Malaki Sullivan"),
+      Person("Hailey Terrell"),
+      Person("Aubree Ferrell"),
+      Person("Eugene Gaines"),
+      Person("Derrick Pace"),
+      Person("Rylee Ayers"),
+      Person("Beckham Meadows"),
+      Person("Tanner Francis"),
+      Person("Niles Crane"),
+      Person("Fabian Compton"),
+      Person("Kirsten Potter"),
+      Person("Kara Jensen"),
+      Person("Jasper Ray"),
+      Person("Frasier Crane")
+    )
+    val output: Seq[(Int, String)] = people.map {
+      case Person("Malaki", _) => 1 -> "Mulligan"
+      case p @ Person(_, lastName) if lastName.endsWith("l") =>
+        2 -> s"$p's last name ends with 'l' and it is $lastName"
+      case p @ (Person("Fabian", _) | Person(_, "Potter") |
+          Person("Eugene", "Gaines")) =>
+        3 -> s"$p was selected by this complex filter"
+      case p if p.initials == "JP" => 4 -> s"$p has initials ${p.initials}"
+      case p if p.isFirstBefore =>
+        5 -> s"$p has the first name's first letter before the last name's first letter: ${p.initials}"
+      case p => 6 -> s"$p was not caught by any filter"
+    }.sorted
+    println("Names processed:")
+    output.foreach(println)
+    assert(output.length == people.length)
+
+    val groups = output.groupBy(_._1).view.mapValues(_.length)
+    println("Names grouped:")
+    groups.foreach(println)
+    val expectedGroup2: Int = 2
+    assert(groups(2) == expectedGroup2)
+    val expectedGroup5: Int = 6
+    assert(groups(5) == expectedGroup5)
+
+    println(
+      "Congratulations! 'The best time to plant a tree was 20 years ago. The second best time is now.' -Chinese Proverb"
+    )
+  }
 
   def upperConstraint(): Unit = {}
 
