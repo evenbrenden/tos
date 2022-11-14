@@ -1823,7 +1823,55 @@ object Exercises {
     )
   }
 
-  def implicitProof(): Unit = {}
+  def implicitProof(): Unit = {
+    {
+      trait Foo[A]
+
+      object Foo {
+        def apply[A](): Foo[A] = new Foo[A] {}
+      }
+
+      object ValidFoos {
+        implicit val FooInt: Foo[Int] = Foo[Int]()
+        implicit val FooString: Foo[String] = Foo[String]()
+      }
+      import ValidFoos._
+
+      def isValidFoo[A: Foo](a: A): A = {
+        println(s"'${a.toString}' is a valid Foo")
+        a
+      }
+
+      val a: Int = isValidFoo[Int](3)
+      assert(a == 3)
+      val b: String = isValidFoo[String]("abc")
+      assert(b == "abc")
+
+      // False
+      // val c: Double = isValidFoo(1.2)
+    }
+
+    {
+      def sum[A](a: A, b: A)(implicit num: Numeric[A]): A = {
+        println(s"$a + $b")
+        num.plus(a, b)
+      }
+
+      val r1: Int = sum[Int](2, 2)
+      println(r1)
+      assert(r1 == 4)
+      val r2: Double = sum[Double](0.3, 0.3)
+      println(r2)
+      assert(r2 == 0.6)
+      val r3: Long = sum[Long](7866, 1)
+      println(r3)
+      assert(r3 == 7867)
+    }
+
+    println(
+      "Congratulations! 'Being strong means rejoicing in who you are, complete with imperfections.' -Margaret Woodhouse"
+    )
+  }
 
   def unapplyMagic(): Unit = {}
 
