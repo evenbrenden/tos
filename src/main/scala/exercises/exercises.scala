@@ -1635,11 +1635,9 @@ object Exercises {
       def display: String
     }
 
-    sealed abstract class Item(name: String, price: Double)
+    sealed abstract class Item(val name: String, val price: Double)
         extends Displayable {
       lazy val display: String = s"${this.name.capitalize}\t${this.price}"
-      lazy val getName: String = name
-      lazy val getPrice: Double = price
     }
 
     case object Apple extends Item("Apple", 0.1)
@@ -1648,17 +1646,17 @@ object Exercises {
     case object Lemon extends Item("Lemon", 0.3)
 
     case class GroceryListRow(item: Item, quantity: Int) extends Displayable {
-      lazy val cost: Double = item.getPrice * quantity
+      lazy val cost: Double = item.price * quantity
       lazy val display: String =
-        s"${item.display}\t\t${item}\t\t${quantity}"
+        s"${item.display}\t\t${quantity}\t\t${cost}"
     }
 
     case class Groceries(items: List[GroceryListRow]) extends Displayable {
-      lazy val totalCost: Double = 0
+      lazy val totalCost: Double = items.map(_.cost).sum
 
       lazy val display: String =
-        "Name\tPrice per Unit\t???\t???\n" +
-          items.map(_.display).mkString("\t\t") +
+        "Name\tPrice per Unit\tQuantity\tTotal Price\n" +
+          items.map(_.display).mkString("\n") +
           s"\nTotal cost: ${totalCost}\n" +
           "-------------------"
 
@@ -1671,8 +1669,8 @@ object Exercises {
     }
 
     {
-      assert(Carrot.getName == "Carrot")
-      assert(Carrot.getPrice == 0.4)
+      assert(Carrot.name == "Carrot")
+      assert(Carrot.price == 0.4)
       assert(Carrot.display == "Carrot\t0.4", Carrot.display)
     }
     {
@@ -1686,6 +1684,7 @@ object Exercises {
     }
     {
       val testCart = Groceries.build(
+        GroceryListRow(Apple, 10),
         GroceryListRow(Carrot, 3),
         GroceryListRow(Lemon, 5)
       )
@@ -1702,16 +1701,15 @@ object Exercises {
 
     val cart = Groceries
       .build(
-        GroceryListRow(Carrot, 3),
-        GroceryListRow(Carrot, 1)
+        GroceryListRow(Apple, 268),
+        GroceryListRow(Carrot, 3)
       )
       .add(GroceryListRow(Apple, 3))
       .add(GroceryListRow(Lemon, 5))
       .add(GroceryListRow(Bread, 1))
-      .add(GroceryListRow(Bread, 1))
 
     println(cart.display)
-    assert(cart.totalCost == 30)
+    assert(cart.totalCost == 30, cart.totalCost)
 
     println(
       "Congratulations! 'The question isn't who is going to let me, it's who is going to stop me.' -Ayn Rand"
