@@ -745,18 +745,16 @@ object Exercises {
     )
   }
 
+  // Fastest at runtime
+  // Needs to be on top level for some reason
+  implicit class IntExtra(val i: Int) extends AnyVal {
+    def isEven: Boolean = i % (2: Int) == 0
+    def increaseByN(n: Int = 1): Int = i + n
+  }
+
   def implicitClass(): Unit = {
     object Implicits {
-      // Compiler says "value class may not be a member of another class"
-      // implicit class IntExtra(val i: Int) extends AnyVal {
-      //   def isEven: Boolean = i % (2: Int) == 0
-      //   def increaseByN(n: Int = 1): Int = i + n
-      // }
-      implicit class IntExtra(i: Int) {
-        def isEven: Boolean = i % (2: Int) == 0
-        def increaseByN(n: Int = 1): Int = i + n
-      }
-
+      // Not fastest at runtime
       implicit class ListExtra(list: List[Int]) {
         def everyNMap(n: Int)(f: Int => Int): List[Int] = {
           list.zipWithIndex.map {
@@ -766,7 +764,6 @@ object Exercises {
         }
       }
     }
-
     import Implicits._
 
     val listEnd: Int = 15
