@@ -1716,9 +1716,115 @@ object Exercises {
     )
   }
 
-  def listZip(): Unit = {}
+  def listZip(): Unit = {
+    val l1: List[Int] = List(1, 2, 3)
+    val l2: List[Int] = List(3, 2, 1)
 
-  def placeholder(): Unit = {}
+    assert(l1.length >= l2.length)
+
+    val r_zip: List[(Int, Int)] = l1 zip l2
+    println(r_zip)
+
+    val r_swap: List[(Int, Int)] = r_zip.map(tuple => tuple.swap)
+    println(r_swap)
+
+    val r_delta: List[Int] = r_swap.map { case (a, b) => b - a }
+    println(r_delta)
+
+    val r_sum: Int = r_delta.sum
+    println(r_sum)
+
+    lazy val expectedValue: Int = 0
+    assert(r_sum == expectedValue, r_sum)
+
+    lazy val r: Int = l1
+      .zip(l2)
+      .map(tuple => (tuple.swap: (Int, Int)))
+      .map { case (a, b) => (b - a: Int) }
+      .sum
+    println(r)
+
+    assert(r_sum == r)
+
+    println(
+      "Congratulations! 'If you do what you always did, you will get what you always got.' -Anonymous"
+    )
+  }
+
+  def placeholder(): Unit = {
+    def add(a: Int, b: Int): Int = {
+      println(s"$a + $b")
+      a + b
+    }
+
+    {
+      println("Partial function:")
+      val add2_1: Int => Int = add(_, 2)
+      val add2_2: Int => Int = add(2, _)
+
+      val input_r: Int = 1
+      val r_1: Int = add2_1(input_r)
+      val r_2: Int = add2_2(input_r)
+      println(r_1)
+      println(r_2)
+      assert(r_1 == r_2)
+    }
+
+    {
+      println("Transformations:")
+      val ll: List[Int] = (0 until 3).toList
+      println(ll)
+
+      val ll_add1: List[Int] = ll.map(n => n + 1)
+      val ll_add1_1: List[Int] = ll.map(_ + 1)
+      println(ll_add1)
+      println(ll_add1_1)
+      assert(ll_add1 == ll_add1_1)
+    }
+
+    {
+      println("Transformations tuples:")
+      val ll: List[(Int, Int)] = ((0 until 10) zip (5 until 15)).toList
+      println(ll)
+
+      val ll_add_1: List[Int] = ll.map { case (a, b) => a + b }
+      println(ll_add_1)
+      val ll_add_2: List[Int] = ll.map(a => a._1 + a._2)
+      println(ll_add_2)
+
+      assert(ll_add_1 == ll_add_2)
+    }
+
+    {
+      println("Accumulators:")
+      val ll: List[Int] = (0 until 10).toList
+      println(ll)
+
+      val ll_sum_1: Int = ll.sum
+      println(ll_sum_1)
+
+      val ll_sum_2: Int = ll.foldLeft(0) { case (acc, current) =>
+        acc + current
+      }
+      println(ll_sum_2)
+
+      val ll_sum_3: Int = ll.foldLeft(0)(_ + _)
+      println(ll_sum_3)
+
+      val ll_sum_4: Int = ll.reduce((acc, cur) => acc + cur)
+      println(ll_sum_4)
+
+      val ll_sum_5: Int = ll.reduce(_ + _)
+      println(ll_sum_5)
+
+      val all_results = List(ll_sum_1, ll_sum_2, ll_sum_3, ll_sum_4, ll_sum_5)
+      assert(all_results.forall(_ == ll_sum_1), all_results)
+    }
+
+    println(
+      "Congratulations! 'If your ship doesn't come in, swim out to meet it!' -Jonathan Winters"
+    )
+  }
 
   def implicitProof(): Unit = {}
 
