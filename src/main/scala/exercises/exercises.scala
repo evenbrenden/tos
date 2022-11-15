@@ -2043,11 +2043,147 @@ object Exercises {
     )
   }
 
-  def multipleInheritance(): Unit = {}
+  def multipleInheritance(): Unit = {
+    trait Animal {}
 
-  def constraintInheritance(): Unit = {}
+    trait CanWalk {
+      def numberOfLegs: Int
+    }
 
-  def higherKind(): Unit = {}
+    trait CanSwim {}
+
+    trait HasFur {
+      def color: String
+    }
+
+    trait Mammal {
+      final lazy val layEgg: Boolean = false
+    }
+
+    trait IsPet {
+      def name: String
+      def color: String
+    }
+
+    trait HasNumber {
+      def name: Int
+    }
+
+    type MammalAnimal = Animal with Mammal
+
+    trait LandMammal extends Animal with Mammal with CanWalk with HasFur {}
+
+    trait SeaMammal extends Animal with Mammal with CanSwim {}
+
+    abstract class Pet(override final val name: String) extends IsPet
+    abstract class WildLife(override final val name: Int) extends HasNumber
+
+    case class Dog(givenName: String, override val color: String)
+        extends Pet(name = "Lassie")
+        with LandMammal {
+      def numberOfLegs = 4
+    }
+
+    case class Whale(id: Int) extends WildLife(name = 0) with SeaMammal {}
+
+    val input: List[Animal] = List(
+      Dog("Dezik", "Black"),
+      Dog("Tsygan", "Brown"),
+      Whale(1),
+      Whale(2),
+      Dog("Balto", "Blue")
+    )
+    println(input)
+    assert(input.length == 5)
+
+    import scala.util.Try
+    val mammalAnimals: List[MammalAnimal] =
+      input.flatMap(a => Try(a.asInstanceOf[MammalAnimal]).toOption)
+    println(input)
+    assert(mammalAnimals.length == 5)
+
+    val pets: List[IsPet] =
+      mammalAnimals.flatMap(a => Try(a.asInstanceOf[IsPet]).toOption)
+    println(pets)
+    assert(pets.length == 3)
+
+    println(
+      "Congratulations! 'Dream as if you'll live forever. Live as if you'll die today.' -James Dean"
+    )
+  }
+
+  def constraintInheritance(): Unit = {
+    trait Animal {
+      def name: String
+      def makeCuddles: Boolean
+    }
+
+    trait Pet { self: Animal =>
+      def petId: Int
+
+      override final lazy val makeCuddles: Boolean = true
+
+      override def toString: String =
+        s"I am $name[$petId] and I cuddle: $makeCuddles"
+    }
+
+    case class Dog(override val name: String, override val petId: Int)
+        extends Pet
+        with Animal {}
+
+    val dog: Dog = Dog("Snuffles", 10)
+    println(dog)
+    assert(dog.name == "Snuffles")
+
+    println(
+      "Congratulations! 'Creativity Is Intelligence Having Fun.' -Albert Einstein"
+    )
+  }
+
+  def higherKind(): Unit = {
+    trait CounterT[A] {
+      def elements: List[A]
+      def latest: A
+    }
+
+    case class Counter(override val elements: List[Int]) extends CounterT[Int] {
+      override final lazy val latest: Int = elements.last
+    }
+
+    trait CountUtil[F[_]] {
+      def apply[A](input: F[A]): Long
+    }
+
+    object Count {
+      object ForSet extends CountUtil[Set] {
+        def apply[A](input: Set[A]): Long = input.size
+      }
+
+      object ForList extends CountUtil[List] {
+        def apply[A](input: List[A]): Long = input.length
+      }
+
+      object ForCounter extends CountUtil[CounterT] {
+        def apply[A](input: CounterT[A]): Long = input.elements.length
+      }
+    }
+
+    val s: Set[Int] = Set(1, 2, 3)
+    val sCount: Long = Count.ForSet(s)
+    assert(sCount == 3, sCount)
+
+    val l: List[Int] = List(1, 2, 3, 4)
+    val lCount: Long = Count.ForList(l)
+    assert(lCount == 4, lCount)
+
+    val c: Counter = Counter(l)
+    val cCount: Long = Count.ForCounter(c)
+    assert(cCount == 4, cCount)
+
+    println(
+      "Congratulations! 'Nothing will work unless you do.' -Maya Angelou"
+    )
+  }
 
   def wildcard(): Unit = {}
 
