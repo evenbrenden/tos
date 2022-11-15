@@ -2185,9 +2185,98 @@ object Exercises {
     )
   }
 
-  def wildcard(): Unit = {}
+  def wildcard(): Unit = {
+    {
+      val input: String = "abc"
+      val result: Int = input match {
+        case "abc" => 1
+        case _     => 0
+      }
+      assert(result == 1, result)
+    }
 
-  def valPatternMatching(): Unit = {}
+    {
+      val input: Option[String] = Some("one")
+      val result: Int = input match {
+        case None    => 0
+        case Some(_) => 2
+      }
+      assert(result == 2, result)
+    }
+
+    {
+      case class User(id: Int, name: String, age: Int)
+
+      val input: User = User(0, "Gomp", 30)
+      val result: Int = input match {
+        case User(_, _, 30)          => 2
+        case User(_, _, n) if n > 30 => 0
+        case _                       => 1
+      }
+      assert(result == 2, result)
+    }
+
+    {
+      import scala.util._
+      val r: Int = Try(3) match {
+        case Success(v) => v
+        case Failure(f) => throw f
+      }
+      assert(r == 3, r)
+    }
+
+    {
+      val a: Int = 1
+      val _: Int = a
+    }
+
+    {
+      val r: Option[Int] = for {
+        a: Int <- Some(1)
+        _ = println("step 1 complete")
+        b: Int <- Some(2)
+        _ = println("step 2 complete")
+        _: Int <- Some(3)
+        r = a + b
+      } yield r
+      assert(r == Some(3), r)
+    }
+
+    {
+      val l: List[Int] = (1 to 4).toList
+      val ll: List[Int] = l.map(_ => 1)
+      println(ll)
+      val r: Int = ll.sum
+      assert(r == 4, r)
+    }
+
+    println(
+      "Congratulations! 'Pain is temporary. Quitting lasts forever.' -Lance Armstrong"
+    )
+  }
+
+  def valPatternMatching(): Unit = {
+    val tuple2: (Int, Option[Int]) = (3, Some(4))
+
+    val (r1, _) = tuple2
+    println(r1)
+    assert(r1 == 3)
+
+    val (_, r2) = tuple2
+    println(r2)
+    assert(r2 == Some(4))
+
+    val (_, Some(r3)) = (0, Some(4))
+    println(r3)
+    assert(r3 == 4)
+
+    val a @ "abc": String = "abc"
+    // val a @ "abc": String = "def"
+
+    println(
+      "Congratulations! 'If you persevere long enough, if you do the right things long enough, the right things will happen.' -Manon Rheaume"
+    )
+  }
 
   def asteriskParameter(): Unit = {}
 
