@@ -2453,11 +2453,150 @@ object Exercises {
     )
   }
 
-  def optionPatternMatching(): Unit = {}
+  def optionPatternMatching(): Unit = {
+    def processOpt(opt: Option[Int]): Int = {
+      opt match {
+        case Some(n) => n * 2
+        case None    => -1
+      }
+    }
 
-  def listPatternMatching(): Unit = {}
+    val a: Option[Int] = Some(2)
+    val r1: Int = processOpt(a)
+    assert(r1 == 4)
 
-  def listOfOptionFlatten(): Unit = {}
+    val b: Option[Int] = None
+    val r2: Int = processOpt(b)
+    assert(r2 == -1)
+
+    println(
+      "Congratulations! 'Someday is not a day of the week.' -Denise Brennan-Nelson"
+    )
+  }
+
+  def listPatternMatching(): Unit = {
+    {
+      val l1: List[Int] = List(1, 2, 3)
+      println(l1)
+      assert(l1 == List(1, 2, 3))
+
+      val l2: List[Int] = 7 :: 6 :: 5 :: Nil
+      println(l2)
+      assert(l2.length == 3)
+
+      val l3: List[Int] = l1 ++ l2
+      println(l3)
+      assert(l3.length == 6)
+
+      val l4: List[Int] = 2 +: 3 +: l3
+      println(l4)
+      assert(l4(0) == 2)
+
+      val l5: List[Int] = 2 :: 5 :: l4
+      println(l5)
+      assert(l5(0) == 2)
+
+      val l6: List[Int] = l5 :+ 5 :+ 4
+      println(l6)
+      assert(l6.length == 12, l6.length)
+    }
+
+    {
+      def processList(l: List[Int]): Int = {
+        l match {
+          case Nil                          => 0
+          case a :: Nil                     => a
+          case a :: b :: Nil                => a + b
+          case a :: b :: tail if a + b == 5 => 5
+          case a :: 3 :: 4 :: tail          => tail.length * 2
+          case a :: b :: c :: Nil           => 3
+          case 1 :: tail                    => tail.length + 2
+          case head :: tail                 => head
+          case _                            => -1
+        }
+      }
+
+      assert(processList(List(-1)) == -1)
+      assert(processList(Nil) == 0)
+      assert(processList(List(1)) == 1)
+      assert(processList(List(1, 1)) == 2)
+      assert(processList(List(3, 0, 0, 0)) == 3)
+      assert(processList(List(2, 2)) == 4)
+      assert(processList(List(2, 3)) == 5)
+      assert(processList(List(1, 1, 1, 1, 1)) == 6)
+      assert(processList(List(7)) == 7)
+    }
+
+    println(
+      "Congratulations! 'The best time to plant a tree was 20 years ago. The second best time is now.' -Chinese Proverb"
+    )
+  }
+
+  def listOfOptionFlatten(): Unit = {
+    {
+      println(">> List")
+
+      val l: List[List[Int]] = List(List(0, 1), List(0, 1, 2))
+      println(l)
+      assert(l.length == 2)
+      assert(l(0).length == 2)
+
+      val lFlatten1: List[Int] = l.flatten
+      println(lFlatten1)
+      assert(lFlatten1.length == 5)
+
+      val lFlatten2: List[Int] = l.map(_.map(_ + 1)).flatten
+      println(lFlatten2)
+
+      val lFlatten3: List[Int] = l.flatMap(_.map(_ + 1))
+      println(lFlatten3)
+
+      assert(lFlatten2.sum == lFlatten3.sum)
+    }
+
+    {
+      println(">> Option")
+
+      val opt: Option[Option[Int]] = Some(Some(0))
+      println(opt)
+      assert(opt.isDefined)
+
+      val optFlatten1: Option[Int] = opt.flatten
+      println(optFlatten1)
+
+      val optFlatten2: Option[Int] = opt.map(_.map(_ + 1)).flatten
+      println(optFlatten2)
+
+      val optFlatten3: Option[Int] = opt.flatMap(_.map(_ + 1))
+      println(optFlatten3)
+
+      assert(optFlatten1.isEmpty == optFlatten3.isEmpty)
+    }
+
+    {
+      println(">> List[Option[Int]]")
+
+      val a: List[Option[Int]] = List(Some(2), None, None, Some(2))
+      println(a)
+      assert(a.length == 4)
+
+      val aFlatten1: List[Int] = a.flatten
+      println(aFlatten1)
+      assert(aFlatten1.length == 2)
+
+      val aFlatten2: List[Int] = a.map(_.map(_ + 1)).flatten
+      println(aFlatten2)
+
+      val aFlatten3: List[Int] = a.flatMap(_.map(_ + 1))
+      println(aFlatten3)
+      assert(aFlatten2.sum == aFlatten3.sum)
+      assert(aFlatten3.sum == 6)
+    }
+
+    println(
+      "Congratulations! 'There is no traffic jam along the extra mile.' -Roger Staubach"
+    )
+  }
 
   def operators(): Unit = {}
 
