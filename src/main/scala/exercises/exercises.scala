@@ -2044,7 +2044,10 @@ object Exercises {
   }
 
   def multipleInheritance(): Unit = {
-    trait Animal {}
+    trait Animal {
+      // Nope
+      // def weight: Double
+    }
 
     trait CanWalk {
       def numberOfLegs: Int
@@ -2071,7 +2074,10 @@ object Exercises {
 
     type MammalAnimal = Animal with Mammal
 
-    trait LandMammal extends Animal with Mammal with CanWalk with HasFur {}
+    // Nope
+    // trait LandMammal extends MammalAnimal with CanWalk with HasFur {}
+
+    trait LandMammal extends Mammal with Animal with CanWalk with HasFur {}
 
     trait SeaMammal extends Animal with Mammal with CanSwim {}
 
@@ -2080,11 +2086,19 @@ object Exercises {
 
     case class Dog(givenName: String, override val color: String)
         extends Pet(name = "Lassie")
+        // Nope
+        // with WildLife
         with LandMammal {
       def numberOfLegs = 4
     }
 
-    case class Whale(id: Int) extends WildLife(name = 0) with SeaMammal {}
+    // Nope
+    // case class Whale(id: Int) extends SeaMammal with WildLife(name = 0) {}
+    case class Whale(id: Int)
+        extends WildLife(name = 0)
+        // Nope
+        // with IsPet
+        with SeaMammal {}
 
     val input: List[Animal] = List(
       Dog("Dezik", "Black"),
