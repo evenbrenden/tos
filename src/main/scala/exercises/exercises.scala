@@ -2337,7 +2337,121 @@ object Exercises {
     )
   }
 
-  def selfReferredType(): Unit = {}
+  def selfReferredType(): Unit = {
+    // OK
+    {
+      trait Combinable {
+        def |+|(other: Combinable): Combinable
+      }
+
+      case class AverageInt(value: Int) extends Combinable {
+        // Does not work because the types must match
+        // override def |+|(other: AverageInt): AverageInt =
+        //   AverageInt((value + other.asInstanceOf[AverageInt].value) / 2)
+
+        override def |+|(other: Combinable): AverageInt =
+          AverageInt((value + other.asInstanceOf[AverageInt].value) / 2)
+      }
+
+      {
+        val a: AverageInt = AverageInt(2)
+        val b: AverageInt = AverageInt(4)
+        val r: Int = (a |+| b).value
+        assert(r == 3)
+      }
+
+      {
+        case class ConcatStrings(value: String) extends Combinable {
+          override def |+|(other: Combinable): ConcatStrings =
+            ConcatStrings((value + other.asInstanceOf[ConcatStrings].value))
+        }
+
+        // Runtime fails
+        // val a: ConcatStrings = ConcatStrings("a")
+        // val b: AverageInt = AverageInt(4)
+        // val r: String = (a |+| b).value
+      }
+    }
+
+    // Better
+    {
+      trait Combinable[A <: Combinable[A]] {
+        def |+|(other: A): A
+      }
+
+      case class AverageInt(value: Int) extends Combinable[AverageInt] {
+        override def |+|(other: AverageInt): AverageInt =
+          AverageInt((value + other.value) / 2)
+      }
+
+      {
+        val a: AverageInt = AverageInt(2)
+        val b: AverageInt = AverageInt(4)
+        val r: Int = (a |+| b).value
+        assert(r == 3)
+      }
+
+      case class ConcatStrings(value: String)
+          extends Combinable[ConcatStrings] {
+        override def |+|(other: ConcatStrings): ConcatStrings =
+          ConcatStrings((value + other.value))
+      }
+
+      {
+        // Compile fails
+        // val a: ConcatStrings = ConcatStrings("a")
+        // val b: AverageInt = AverageInt(4)
+        // val r: String = (a |+| b).value
+      }
+
+      {
+        // Works but we don't want it to
+        case class AddInt(value: Int) extends Combinable[ConcatStrings] {
+          override def |+|(other: ConcatStrings): ConcatStrings =
+            ConcatStrings((value.toString + other.value))
+        }
+
+        // Just weird
+        val a: AddInt = AddInt(1)
+        val b: ConcatStrings = ConcatStrings("2")
+        val r = (a |+| b).value
+        println(r)
+      }
+    }
+
+    // Best
+    {
+      trait Combinable[A <: Combinable[A]] { this: A =>
+        def |+|(other: A): A
+      }
+
+      case class AverageInt(value: Int) extends Combinable[AverageInt] {
+        override def |+|(other: AverageInt): AverageInt =
+          AverageInt((value + other.value) / 2)
+      }
+
+      val a: AverageInt = AverageInt(2)
+      val b: AverageInt = AverageInt(4)
+      val r: Int = (a |+| b).value
+      assert(r == 3)
+
+      case class ConcatStrings(value: String)
+          extends Combinable[ConcatStrings] {
+        override def |+|(other: ConcatStrings): ConcatStrings =
+          ConcatStrings((value + other.value))
+      }
+
+      // Compile fails
+      // case class AddInt(value: Int) extends Combinable[ConcatStrings] {
+      //   override def |+|(other: ConcatStrings): ConcatStrings =
+      //     ConcatStrings((value.toString + other.value))
+      // }
+    }
+
+    println(
+      "Congratulations! 'Just one small positive thought in the morning can change your whole day.' -Dalai Lama"
+    )
+  }
 
   def optionPatternMatching(): Unit = {}
 
