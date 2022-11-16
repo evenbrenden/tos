@@ -1833,6 +1833,7 @@ object Exercises {
 
       // The object wrapper is not actually needed
       object ValidFoos {
+        // Proofs
         implicit val FooInt: Foo[Int] = Foo[Int]()
         implicit val FooString: Foo[String] = Foo[String]()
       }
@@ -1854,7 +1855,7 @@ object Exercises {
     }
 
     {
-      def sum[A](a: A, b: A)(implicit num: Numeric[A]): A = {
+      def sum[A](a: A, b: A)(implicit num: Numeric[A] /* Proof */ ): A = {
         println(s"$a + $b")
         num.plus(a, b)
       }
@@ -2598,13 +2599,181 @@ object Exercises {
     )
   }
 
-  def operators(): Unit = {}
+  def operators(): Unit = {
+    {
+      case class Complex(real: Double, imaginary: Double) {
+        def +(other: Complex): Complex =
+          Complex(
+            real = this.real + other.real,
+            imaginary = this.imaginary + other.imaginary
+          )
 
-  def literalIdentifiers(): Unit = {}
+        def *(other: Complex): Complex =
+          Complex(
+            real = this.real * other.real - this.imaginary * other.imaginary,
+            imaginary =
+              this.real * other.imaginary + this.imaginary * other.real
+          )
 
-  def extractorPattern(): Unit = {}
+        override final lazy val toString: String =
+          s"$real${if (imaginary >= 0) "+" else ""}${imaginary}i"
+      }
 
-  def functor(): Unit = {}
+      val cA: Complex = Complex(3, 4)
+      val cB: Complex = Complex(3, 4)
+      val r: Complex = cA + cB
+      println(r)
+      assert(r.real == 6)
+      assert(r.imaginary == 8)
+    }
+
+    {
+      case class Node(s: String) {
+        def |+|(other: Node): Node = Node(this.s + other.s)
+
+        // No idea what the exercise was trying to do here
+        def \(other: Node): Node = Node(s"$s\\${other.s}")
+        def /(other: Node): Node = Node(s"$s/${other.s}")
+
+        def unary_! = Node(s.reverse)
+      }
+
+      val a: Node = Node("a")
+      val b: Node = Node("b")
+      val r1: Node = a |+| b
+      println(r1)
+      assert(r1.s == "ab")
+
+      val r2: Node = a \ b
+      val r3: Node = a / b
+      println(r2)
+      println(r3)
+      assert(r2.s == "a\\b")
+      assert(r3.s == "a/b")
+
+      val r4: Node = !r1
+      println(r1.s)
+      println(r4.s)
+      assert(r4.s == "ba")
+    }
+
+    {
+      case class Value(i: Double) {
+        def unary_- = Value(-1 * i)
+        def unary_+ = Value(i + 1)
+        def unary_~ = Value(Math.round(i).toDouble)
+      }
+
+      val v: Value = Value(-4.2)
+      val r1: Value = -v
+      println(r1)
+      assert(r1.i == 4.2)
+
+      val r2: Value = +r1
+      println(r2)
+      assert(r2.i == 5.2)
+
+      val r3: Value = Value(5)
+      println(r3)
+      assert(r3.i == 5)
+    }
+
+    println(
+      "Congratulations! 'Don't worry about being successful but work toward being significant and the success will naturally follow.' -Oprah Winfrey"
+    )
+  }
+
+  def literalIdentifiers(): Unit = {
+    val `a`: Int = 1
+    println(`a`)
+    assert(`a` == 1)
+
+    val `this is a valid value name`: String = "abc"
+    println(`this is a valid value name`)
+    assert(`this is a valid value name` == "abc")
+
+    println(
+      "Congratulations! 'Remember why you started.' -Anonymous"
+    )
+  }
+
+  def extractorPattern(): Unit = {
+    trait Extractor[A] {
+      // Reflection magic
+      import scala.reflect.ClassTag
+      def apply[B <: A: ClassTag](input: List[A]): List[B] = {
+        input.collect { case b: B => b }
+      }
+    }
+
+    trait Animal
+
+    object AnimalExtract extends Extractor[Animal]
+
+    case class Dog(name: String) extends Animal
+    case class Cat(name: String) extends Animal
+
+    val animals: List[Animal] =
+      List(Dog("Dogg"), Dog("Dogg"), Cat("Katt"), Cat("Katt"), Cat("Katt"))
+    println(animals)
+    assert(animals.length == 5)
+
+    // Fails at runtime
+    // val dogs: List[Dog] = AnimalExtract(animals)
+    val dogs: List[Dog] = AnimalExtract[Dog](animals)
+    println(dogs)
+    assert(dogs.length == 2)
+
+    val cats: List[Cat] = AnimalExtract[Cat](animals)
+    println(cats)
+    assert(cats.length == 3)
+
+    println(
+      "Congratulations! 'Start where you are. Use what you have. Do what you can.' -Arthur Ashe"
+    )
+  }
+
+  def functor(): Unit = {
+    trait Functor[F[_]] {
+      def map[A, B](fa: F[A])(f: A => B): F[B]
+    }
+
+    case class Pair[A](m: A, n: A) {
+      def map[B](f: A => B): Pair[B] = Pair.map(this)(f)
+    }
+
+    object Pair extends Functor[Pair] {
+      def map[A, B](fa: Pair[A])(f: A => B): Pair[B] = {
+        Pair[B](f(fa.m), f(fa.n))
+      }
+    }
+
+    {
+      val p: Pair[Int] = Pair(3, 5)
+      println(p)
+      assert(p.m == 3)
+      assert(p.n == 5)
+      val r: Pair[Int] = p.map(x => x + 1)
+      println(r)
+      assert(r.m == 4)
+      assert(r.n == 6)
+    }
+
+    {
+      val p: Pair[String] = Pair("hello", "world!")
+      println(p)
+      assert(p.m == "hello")
+      assert(p.n == "world!")
+      val r: Pair[Int] = p.map(p => p.length)
+      println(r)
+      assert(r.m == 5)
+      assert(r.n == 6)
+    }
+
+    println(
+      "Congratulations! 'I never dreamed about success. I worked for it.' -Estee Lauder"
+    )
+  }
 
   def foldable(): Unit = {}
 
