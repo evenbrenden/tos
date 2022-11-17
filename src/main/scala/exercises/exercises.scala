@@ -2775,17 +2775,420 @@ object Exercises {
     )
   }
 
-  def foldable(): Unit = {}
+  def foldable(): Unit = {
+    trait Foldable[F[_]] {
+      def fold[A, B](fa: F[A])(start: B)(f: (B, A) => B): B
+    }
 
-  def applicative(): Unit = {}
+    sealed abstract class Node[A](val v: A) {
+      def fold[B](start: B)(f: (B, A) => B) = Node.fold(this)(start)(f)
+    }
+    case class Chain[A](override val v: A, next: Node[A]) extends Node[A](v) {
+      override final lazy val toString: String = s"$v -> ${next.toString}"
+    }
+    case class Tail[A](override val v: A) extends Node[A](v) {
+      override final lazy val toString: String = v.toString
+    }
 
-  def covariance(): Unit = {}
+    object Node extends Foldable[Node] {
+      def apply[A](v: A): Node[A] = Tail(v)
+      def apply[A](v: A, next: Node[A]) = Chain(v, next)
 
-  def traversable(): Unit = {}
+      def fold[A, B](fa: Node[A])(start: B)(f: (B, A) => B): B = {
+        def loop(n: Node[A], acc: B): B = {
+          n match {
+            case Tail(v)        => f(acc, v)
+            case Chain(v, rest) => loop(rest, f(acc, v))
+          }
+        }
+        loop(fa, start)
+      }
+    }
 
-  def typeclass(): Unit = {}
+    {
+      val chain: Node[Int] = Node(1, Node(2))
+      println(chain)
 
-  def monad(): Unit = {}
+      val r: Int = chain.fold[Int](3)(_ + _)
+      println(r)
+    }
+
+    {
+      val chain: Node[String] = Node("hello", Node("world!"))
+      println(chain)
+      val r1: String = chain.fold("") {
+        case ("", v)  => v.capitalize
+        case (acc, v) => s"$acc ${v.capitalize}"
+      }
+      println(r1)
+      assert(r1 == "Hello World!")
+
+      val r2 = chain.fold(0)(_ + _.length)
+      println(r2)
+      assert(r2 == 11)
+    }
+
+    println(
+      "Congratulations! 'Be deliberate and afraid of nothing.' -Audre Lorde"
+    )
+  }
+
+  // Weird JVM runtime error (works in the Scastie)
+  def applicative(): Unit = {
+    // trait Functor[F[_]] {
+    //   def map[A, B](fa: F[A])(f: A => B): F[B]
+    // }
+    //
+    // trait Applicative[F[_]] extends Functor[F] {
+    //   def pure[A](a: A): F[A]
+    //
+    //   def applicate[A, B](f: F[A => B])(a: F[A]): F[B]
+    //
+    //   final override def map[A, B](a: F[A])(f: A => B): F[B] =
+    //     applicate[A, B](pure[A => B](f))(a)
+    // }
+    //
+    // // Covariance
+    // trait Box[+A] {
+    //   def map[B](f: A => B): Box[B] = Box.map(this)(f)
+    //
+    //   def isDefined: Boolean
+    //   def open: A
+    // }
+    //
+    // case class FilledBox[A](v: A) extends Box[A] {
+    //   final lazy val isDefined: Boolean = true
+    //   final lazy val open: A = v
+    // }
+    //
+    // case object EmptyBox extends Box[Nothing] {
+    //   final lazy val isDefined: Boolean = false
+    //   final lazy val open: Nothing =
+    //     throw new Exception("The box was empty!")
+    // }
+    //
+    // object Box extends Applicative[Box] {
+    //   def apply[A](): Box[A] = EmptyBox
+    //   def apply[A](a: A): Box[A] = pure(a)
+    //
+    //   def pure[A](a: A) = FilledBox[A](a)
+    //
+    //   def applicate[A, B](ff: Box[A => B])(fa: Box[A]): Box[B] = {
+    //     fa match {
+    //       case EmptyBox => EmptyBox
+    //       case FilledBox(a) =>
+    //         ff match {
+    //           case EmptyBox     => EmptyBox
+    //           case FilledBox(f) => FilledBox(f(a))
+    //         }
+    //     }
+    //   }
+    // }
+    //
+    // {
+    //   val b: Box[Int] = FilledBox(2)
+    //   println(b)
+    //   assert(b.isDefined)
+    //   assert(b.open == 2)
+    //   val r = b.map(x => 2 * x)
+    //   println(r)
+    //   assert(r.isDefined)
+    //   assert(r.open == 4)
+    // }
+    //
+    // {
+    //   val b: Box[Int] = EmptyBox
+    //   println(b)
+    //   assert(!b.isDefined)
+    //   val r = b.map(x => 2000 * x)
+    //   println(r)
+    //   assert(!r.isDefined)
+    // }
+    //
+    // {
+    //   val fa: Box[String] = Box("abc")
+    //   val fb: Box[Int] = Box(3)
+    //   def f(a: String, b: Int): String = List.fill(b)(a).mkString(" ")
+    //
+    //   println(fa)
+    //   println(fb)
+    //
+    //   val fab: Box[Int => String] = fa.map(a => (i: Int) => f(a, i))
+    //
+    //   val r: Box[String] = Box.applicate[Int, String](fab)(fb)
+    //   println(r)
+    //   assert(r == Box("abc abc abc"))
+    // }
+    //
+    // println(
+    //   "Congratulations! 'Find out who you are and do it on purpose.' -Dolly Parton"
+    // )
+  }
+
+  def covariance(): Unit = {
+    trait Shape
+
+    case class Square() extends Shape
+    case class Circle() extends Shape
+
+    {
+      trait NormalSocket[A]
+
+      object NormalSocket {
+        def apply[A](): NormalSocket[A] = new NormalSocket[A] {}
+      }
+
+      val a: NormalSocket[Square] = NormalSocket[Square]()
+
+      // Nope
+      // val b: NormalSocket[Circle] = a
+      // Nope
+      // val c: NormalSocket[Shape] = a
+    }
+
+    {
+      trait CovariantSocket[+A]
+
+      object CovariantSocket {
+        def apply[A](): CovariantSocket[A] = new CovariantSocket[A] {}
+      }
+
+      val a: CovariantSocket[Square] = CovariantSocket[Square]()
+
+      // Nope
+      // val b: CovariantSocket[Circle] = a
+
+      // Yep
+      val c: CovariantSocket[Shape] = a
+      assert(c == a)
+    }
+
+    println(
+      "Congratulations! 'Make it work.' -Tim Gunn"
+    )
+  }
+
+  def traversable(): Unit = {
+    trait Functor[F[_]] {
+      def map[A, B](fa: F[A])(f: A => B): F[B]
+    }
+
+    trait Applicative[F[_]] extends Functor[F] {
+      def pure[A](a: A): F[A]
+
+      def applicate[A, B](f: F[A => B])(a: F[A]): F[B]
+
+      final override def map[A, B](a: F[A])(f: A => B): F[B] =
+        applicate[A, B](pure[A => B](f))(a)
+    }
+
+    trait Traversable[F[_]] extends Applicative[F] {
+      final def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = {
+        la.foldLeft(pure(List.empty[B])) { case (acc, element) =>
+          val fb: F[B] = f(element)
+          val fCombine: F[B => List[B]] =
+            map(acc)((l: List[B]) => (a: B) => l :+ a)
+          val output: F[List[B]] = applicate(fCombine)(fb)
+          output
+        }
+      }
+
+      final def sequence[A](lfa: List[F[A]]): F[List[A]] =
+        traverse(lfa)(identity)
+    }
+
+    case class Box[A](v: A)
+
+    object Box extends Traversable[Box] {
+      def pure[A](a: A) = Box[A](a)
+
+      def applicate[A, B](ff: Box[A => B])(fa: Box[A]): Box[B] = Box(ff.v(fa.v))
+    }
+
+    {
+      println("-Traverse-")
+      val input: List[Int] = List(1, 2, 3, 4)
+      println(input)
+      assert(input.length == 4)
+
+      val output: Box[List[String]] = Box.traverse(input) {
+        case 1               => Box("one")
+        case n if n % 2 == 0 => Box("even")
+        case a               => Box("x" * a)
+      }
+      println(output)
+      assert(output.v.length == 4)
+    }
+
+    {
+      println("-Sequence-")
+      val input: List[Box[Int]] = List(Box(1), Box(2), Box(3), Box(4))
+      println(input)
+      assert(input.length == 4)
+
+      val output: Box[List[Int]] = Box.sequence(input)
+      println(output)
+      assert(output.v.length == 4)
+    }
+
+    println(
+      "Congratulations! 'What would you do if you weren't afraid?' -Sheryl Sandberg"
+    )
+  }
+
+  def typeclass(): Unit = {
+    // Typeclass
+    trait DoubleUp[A] {
+      def apply(a: A): A
+    }
+
+    // Instance
+    implicit val DoubleUpInt: DoubleUp[Int] = new DoubleUp[Int] {
+      def apply(a: Int): Int = 2 * a
+    }
+
+    // Instance
+    implicit object DoubleUpString extends DoubleUp[String] {
+      def apply(a: String): String = List(a, a).mkString(" ")
+    }
+
+    def fourTime[A](a: A)(implicit double: DoubleUp[A]): A = double(double(a))
+
+    val i: Int = fourTime[Int](8)
+    println(i)
+    assert(i == 32)
+
+    val s: String = fourTime[String]("hello")
+    println(s)
+    assert(s == "hello hello hello hello")
+
+    case class Square(c: Int) {
+      final lazy val area: Int = Math.pow(c, 2).toInt
+    }
+
+    // Instance
+    implicit object DoubleUpSquare extends DoubleUp[Square] {
+      def apply(a: Square): Square = Square(2 * a.c)
+    }
+
+    val square: Square = Square(6)
+    println(square.area)
+    assert(square.area == 36)
+
+    val bigSquare: Square = fourTime(square)
+    println(bigSquare)
+    assert(bigSquare.area == 576)
+
+    println(
+      "Congratulations! 'Life is short. Don't be lazy.' -Sophia Amoruso"
+    )
+  }
+
+  def monad(): Unit = {
+    trait Functor[F[_]] {
+      def map[A, B](fa: F[A])(f: A => B): F[B]
+    }
+
+    trait Applicative[F[_]] extends Functor[F] {
+      def pure[A](a: A): F[A]
+      def applicate[A, B](f: F[A => B])(fa: F[A]): F[B]
+    }
+
+    trait Monad[F[_]] extends Applicative[F] {
+      def flatten[A](ffa: F[F[A]]): F[A]
+
+      def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B] = {
+        val ffb: F[F[B]] = map(fa)(f)
+        val fb: F[B] = flatten(ffb)
+        fb
+      }
+
+      final override def applicate[A, B](f: F[A => B])(fa: F[A]): F[B] = {
+        flatMap(f) { (fab: A => B) =>
+          map(fa)(fab(_))
+        }
+      }
+    }
+    sealed abstract class Box[+A](val isDefined: Boolean)
+
+    implicit object BoxMonad extends Monad[Box] {
+      final override def map[A, B](fa: Box[A])(f: A => B): Box[B] = {
+        fa match {
+          case FilledBox(a) => pure(f(a))
+          case EmptyBox     => EmptyBox
+        }
+      }
+
+      final override def pure[A](a: A): Box[A] = FilledBox(a)
+
+      final override def flatten[A](ffa: Box[Box[A]]): Box[A] = {
+        ffa match {
+          case FilledBox(fa) => fa
+          case EmptyBox      => EmptyBox
+        }
+      }
+
+    }
+
+    // So that you can do e.g. box.flatMap
+    implicit class BoxMonadUtil[A](ba: Box[A])(implicit m: Monad[Box]) {
+      def map[B](f: A => B): Box[B] = m.map(ba)(f)
+      def flatMap[B](f: A => Box[B]): Box[B] = m.flatMap(ba)(f)
+
+      def filter(p: A => Boolean): Box[A] = ba.flatMap {
+        case a if p(a) => FilledBox(a)
+        case _         => EmptyBox
+      }
+    }
+
+    case class FilledBox[A](v: A) extends Box[A](true)
+
+    case object EmptyBox extends Box[Nothing](false)
+
+    {
+      println("- example 1")
+      val box1: Box[Int] = FilledBox(4)
+      println(box1)
+      assert(box1.isDefined)
+
+      val box2: Box[Int] = box1.map(_ * 2)
+      println(box2)
+      assert(box2.isDefined)
+      box2.map { a =>
+        assert(a == 8)
+      }
+    }
+
+    {
+      println("- example 2")
+      val box1: Box[Int] = FilledBox(4)
+      println(box1)
+      assert(box1.isDefined)
+
+      val box2: Box[String] = box1.flatMap {
+        case a if a % 2 == 0 => FilledBox("even")
+        case a if a % 3 == 0 => FilledBox("three")
+        case a if a > 10     => FilledBox("unknown")
+        case _               => EmptyBox
+      }
+      println(box2)
+    }
+
+    {
+      println("- example 3")
+      val box: Box[Int] = FilledBox(3)
+      println(box)
+      assert(box.isDefined)
+
+      val box1: Box[Int] = box.filter(_ > 3)
+      println(box1)
+      assert(!box1.isDefined)
+    }
+
+    println(
+      "Congratulations! 'Blame it or praise it, there is no denying the wild horse in us.' -Virginia Woolf"
+    )
+  }
 }
 
 object Main {
