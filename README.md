@@ -1,3 +1,3 @@
 # tourofscala
 
-Doing [Tour of Scala by Leo Benkel](https://tourofscala.com/). Can be used as a sort of language reference.
+Doing [Tour of Scala](https://tourofscala.com/) by Leo Benkel. Can be used as a sort of language reference.
