@@ -71,7 +71,7 @@ object Exercises {
     assert(thisMethod + thisMethod == 10)
 
     println("-")
-    println("Testing Lazy val")
+    println("Testing lazy val")
     assert(thisLazyVal + thisLazyVal == 20)
 
     println("-")
@@ -167,7 +167,7 @@ object Exercises {
     assert(result == 567)
 
     println(
-      "Congratulations! 'Do what you have to do, until you can do what you want to do.' Oprah Winfrey"
+      "Congratulations! 'Do what you have to do, until you can do what you want to do.' -Oprah Winfrey"
     )
   }
 
@@ -789,7 +789,7 @@ object Exercises {
 
     val testPhoneNumber: String = "123-456-7890"
     val isPhoneNumber = "[0-9]{3}-[0-9]{3}-[0-9]{4}".r.matches(testPhoneNumber)
-    println(s"is phone number: $isPhoneNumber")
+    println(s"isPhoneNumber: $isPhoneNumber")
 
     object FindEmail {
       private val regex: Regex = new Regex("([a-z]+)@([a-z]+)\\.([a-z]+)")
@@ -818,7 +818,7 @@ object Exercises {
     val isAddress = "([0-9]+) ([a-z]+) (st|blvd)\\.".r
     testAddress match {
       case isAddress(number, streetName, streetType) =>
-        println(s"streetName: $streetName $streetType, at: $number")
+        println(s"streetName: $streetName $streetType. $number")
         assert(number.toInt == 123, number)
     }
 
