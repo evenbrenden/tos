@@ -3129,7 +3129,6 @@ object Exercises {
 
     }
 
-    // So that you can do e.g. box1.flatMap
     implicit class BoxMonadUtil[A](ba: Box[A])(implicit m: Monad[Box]) {
       def map[B](f: A => B): Box[B] = m.map(ba)(f)
       def flatMap[B](f: A => Box[B]): Box[B] = m.flatMap(ba)(f)
