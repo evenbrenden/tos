@@ -3074,8 +3074,9 @@ object Exercises {
     println(square.area)
     assert(square.area == 36)
 
-    val bigSquare: Square = fourTime(square)
-    println(bigSquare)
+    // fourTime type parameter is inferred from square val
+    val bigSquare = fourTime(square)
+    println(bigSquare.area)
     assert(bigSquare.area == 576)
 
     println(
